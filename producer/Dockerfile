@@ -19,7 +19,7 @@ RUN apt-get update && \
       libssl-dev \
       libsasl2-dev \
       pkg-config \
-      && rm -rf /var/lib/apt/lists/*
+      && rm -rf /var/lib/apt/lists/* 
 
 # Manually install librdkafka with SASL/SSL support
 RUN curl -fsSL https://github.com/confluentinc/librdkafka/archive/refs/tags/v2.8.0.tar.gz -o librdkafka.tar.gz && \
