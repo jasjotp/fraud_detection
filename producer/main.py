@@ -2,9 +2,15 @@ import os
 from confluent_kafka import Producer
 import logging 
 import random
+import json
 from dotenv import load_dotenv
 from faker import Faker
-
+from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+import signal
+from typing import Optional, Dict, Any
+from datetime import timezone
+import time
 
 logging.basicConfig(
     format = '%(asctime)s - %(levelname)s - %(module)s - %(message)s',
@@ -26,6 +32,7 @@ class TransactionProducer():
         self.kafka_password = os.getenv('KAFKA_PASSWORD')
         self.topic = os.getenv('KAFKA_TOPIC', 'transactions')
         self.running = False
+        self.user_transaction_history = defaultdict(list) # track past transaction times for velocity check
 
         # confluent kafka configuration
         self.producer_config = {
@@ -67,10 +74,123 @@ class TransactionProducer():
         # configure graceful shutdown 
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
+    
+    # function to deliver report 
+    def delivery_report(self, err, msg):
+        if err is not None:
+            logger.error(f'Message Delivery Failed!: {err}')
+        else:
+            logger.info(f'Message delivered to: {msg.topic()} [{msg.partition()}]')
+
+    # function to apply a velocity check, to see if many transactions happen in a short time span
+    def apply_velocity_check(self, transaction):
+        user_id = transaction['user_id']
+        transaction_time = datetime.fromisoformat(transaction['timestamp'])
+        self.user_transaction_history[user_id].append(transaction_time)
+
+        # keep only transactions in the last 60 seconds 
+        window_start = transaction_time - timedelta(seconds = 60)
+        recent_times = [t for t in self.user_transaction_history[user_id] if t > window_start]
+
+        # update the user's transaction history with the filtered recent times 
+        self.user_transaction_history[user_id] = recent_times
+
+        # if the user has 5 or more transactions in the last minute, then set the transaction to fraud 
+        if len(recent_times) >= 5:
+            transaction['is_fraud'] = 1 
+            transaction['note'] = 'Velocity pattern detected'
+
+    # function to generate the transaction: returns a dict in a string format of the transaction 
+    def generate_transaction(self) --> Optional[Dict[str, Any]]:
+        transaction = {
+            'transaction_id': fake.uuid4(),
+            'user_id': random.randint(1000, 9999),
+            'amount': round(fake.pyfloat(min_value = 0.01, max_value = 10000), 2),
+            'currency': 'USD',
+            'merchant': fake.company(),
+            'timestamp': (datetime.now(timezone.utc) + timedelta(seconds = random.randint(-300, 3000))).isoformat(), # use UTC time so we know there is no discrepancy between transactions that happen in different timezones
+            'location': fake.country_code(),
+            'is_fraud': 0
+        }
+
+        is_fraud = 0 
+        amount = transaction['amount']
+        user_id = transaction['user_id']
+        merchant = transaction['merchant']
+
+        # apply patterns to generate the fradulent transaction and make sure the transaction is set to fraudulent (is_fraud = 1)
+
+        # simulate velocity checks: if many transactions happen in a short time span 
+        if not is_fraud:
+            self.apply_velocity_check(transaction)
+            is_fraud = transaction['is_fraud']
+
+        # account takeover
+        if user_id in self.compromised_users and amount > 500: 
+            if random.random() < 0.3:  # 30% chance of fraud in compromized accounts
+                is_fraud = 1 
+                transaction['amount'] = random.uniform(500, 5000)
+                transaction['merchant'] = random.choice(self.high_risk_merchants)
+
+        # card testing 
+        if not is_fraud and amount < 2.0:
+            # simulate rapid small transactions 
+            if user_id % 1000 == 0 and random.random() < 0.25:
+                is_fraud = 1 
+                transaction['amount'] = round(random.uniform(0.01, 2), 2)
+                transaction['location'] = 'US'
+
+        # merchant collusion 
+        if not is_fraud and merchant in self.high_risk_merchants:
+            if amount > 3000 and random.random() < 0.15:
+                is_fraud = 1 
+                transaction['amount'] = round(random.uniform(300, 1500), 2)
+          
+        # geographic anomalies 
+        if not is_fraud:
+            if user_id % 500 == 0 and random.random() < 0.1:
+                is_fraud = 1 
+                transaction['location'] = random.choice(['CHINA', 'RUSSIA', 'SAUDI ARABIA', 'PAKISTAN', 'INDIA'])
+
+        # eshtablish the baseline for random fraud (~0.1 - 0.3%)
+        
+
+    # function to send a transaction to Kafka 
+    def send_transaction(self) --> bool:
+        try:
+            transaction = self.generate_transaction()
+
+            if not transaction:
+                return False 
+            
+            self.producer.produce(
+                self.topic,
+                key = transaction['transaction_id'],
+                value = json.dumps(transaction),
+                callback = self.delivery_report
+            )
+
+            self.producer.poll(0) # trigger callbacks 
+            return True 
+        except Exception as e:
+            logger.error(f'Error producing message: {e}')
+            return False 
+
 
     # create a function to generate transactions 
     def run_continuous_production(self, interval: float = 0.0):
-        pass:
+        '''
+        Run continuous message production with graceful shutdown
+        '''
+        self.running = True
+        logger.info('Starting producer for topic %s...', self.topic)
+        
+        try:
+            while self.running:
+                if self.send_transaction():
+                    time.sleep(interval)
+        finally:
+            self.shutdown()
 
     # create the shutdown function 
     def shutdown(self, signum = None, frame = None):
