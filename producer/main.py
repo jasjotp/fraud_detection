@@ -32,7 +32,7 @@ TRANSACTION_SCHEMA = {
     "properties": {
         "transaction_id": {"type": "string"},
         "user_id": {"type": "number", "minimum": 1000, "maximum": 9999},
-        "amount": {"type": "number", "minimum": 0.01, "maximum": 100000},
+        "amount": {"type": "number", "minimum": 0.01, "maximum": 10000},
         "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
         "merchant": {"type": "string"},
         "timestamp": {
@@ -66,7 +66,7 @@ class TransactionProducer():
         # if there is a username and password, validate the username and password
         if self.kafka_username and self.kafka_password:
             self.producer_config.update({
-                'security_protocol': 'SASL_SSL',
+                'security.protocol': 'SASL_SSL',
                 'sasl.mechanism': 'PLAIN',
                 'sasl.username': self.kafka_username,
                 'sasl.password': self.kafka_password
@@ -128,11 +128,14 @@ class TransactionProducer():
                 schema = TRANSACTION_SCHEMA,
                 format_checker = FormatChecker()
             )
+            return True
         except ValidationError as e:
             logger.error(f'Invalid transaction: {e.message}')
+            logger.debug(f'Transaction content: {json.dumps(transaction, indent=2)}')
+            return False
 
     # function to generate the transaction: returns a dict in a string format of the transaction 
-    def generate_transaction(self) --> Optional[Dict[str, Any]]:
+    def generate_transaction(self) -> Optional[Dict[str, Any]]:
         transaction = {
             'transaction_id': fake.uuid4(),
             'user_id': random.randint(1000, 9999),
@@ -194,16 +197,20 @@ class TransactionProducer():
         # validate the modified transaction 
         if self.validate_transaction(transaction):
             return transaction 
-
+        logger.warning("Transaction failed schema validation and was not returned.")
+        return None
 
     # function to send a transaction to Kafka 
-    def send_transaction(self) --> bool:
+    def send_transaction(self) -> bool:
         try:
             transaction = self.generate_transaction()
 
             if not transaction:
+                logger.warning("No transaction returned from generate_transaction()")
                 return False 
             
+            logger.info(f"Sending transaction: {transaction['transaction_id']}")
+
             self.producer.produce(
                 self.topic,
                 key = transaction['transaction_id'],
@@ -216,7 +223,6 @@ class TransactionProducer():
         except Exception as e:
             logger.error(f'Error producing message: {e}')
             return False 
-
 
     # create a function to generate transactions 
     def run_continuous_production(self, interval: float = 0.0):
