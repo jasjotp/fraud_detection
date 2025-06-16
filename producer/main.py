@@ -10,6 +10,7 @@ from collections import defaultdict
 import signal
 from typing import Optional, Dict, Any
 from datetime import timezone
+from jsonschema import validate, ValidationError, FormatChecker
 import time
 
 logging.basicConfig(
@@ -24,6 +25,25 @@ load_dotenv(dotenv_path = '/app/.env')
 
 # import faker to generate transactions 
 fake = Faker()
+
+# JSON Schema for transaction validation
+TRANSACTION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "transaction_id": {"type": "string"},
+        "user_id": {"type": "number", "minimum": 1000, "maximum": 9999},
+        "amount": {"type": "number", "minimum": 0.01, "maximum": 100000},
+        "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+        "merchant": {"type": "string"},
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "location": {"type": "string", "pattern": "^[A-Z]{2}$"},
+        "is_fraud": {"type": "integer", "minimum": 0, "maximum": 1}
+    },
+    "required": ["transaction_id", "user_id", "amount", "currency", "timestamp", 'is_fraud']
+}
 
 class TransactionProducer():
     def __init__(self):
@@ -100,6 +120,17 @@ class TransactionProducer():
             transaction['is_fraud'] = 1 
             transaction['note'] = 'Velocity pattern detected'
 
+    # function to validate a transaction 
+    def validate_transaction(self, transaction) -> bool:
+        try:
+            validate(
+                instance = transaction, 
+                schema = TRANSACTION_SCHEMA,
+                format_checker = FormatChecker()
+            )
+        except ValidationError as e:
+            logger.error(f'Invalid transaction: {e.message}')
+
     # function to generate the transaction: returns a dict in a string format of the transaction 
     def generate_transaction(self) --> Optional[Dict[str, Any]]:
         transaction = {
@@ -153,7 +184,17 @@ class TransactionProducer():
                 transaction['location'] = random.choice(['CHINA', 'RUSSIA', 'SAUDI ARABIA', 'PAKISTAN', 'INDIA'])
 
         # eshtablish the baseline for random fraud (~0.1 - 0.3%)
-        
+        if not is_fraud and random.random() < 0.002:
+            is_fraud = 1 
+            transaction['amount'] = random.uniform(100, 2000)
+
+        # ensure that the final fraud rate is between 1-2% 
+        transaction['is_fraud'] = is_fraud if random.random() < 0.985 else 0 
+
+        # validate the modified transaction 
+        if self.validate_transaction(transaction):
+            return transaction 
+
 
     # function to send a transaction to Kafka 
     def send_transaction(self) --> bool:
