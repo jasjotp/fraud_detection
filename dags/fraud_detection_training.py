@@ -1,5 +1,6 @@
 import os
 import logging 
+import boto3
 from dotenv import load_dotenv
 
 logging.basicConfig(
@@ -50,7 +51,39 @@ class FraudDetectionTraining:
     
     # function to validate the environment
     def validate_environment(self):
+        required_vars = ['KAFKA_BOOTSTRAP_SERVERS', 'KAFKA_USERNAME', 'KAFKA_PASSWORD']
+
+        # check for missing variables, if we are not able to get any of these parameters, raise an error
+        missing = [var for var in required_vars if not os.getenv(var)]
+        if missing:
+            raise ValueError(f'Missing required environment variables: {missing}')
         
+        # if the variable is not missing, cheeck the minio connection 
+        self.check_minio_connection()
+    
+    # function to check the minio connection 
+    def check_minio_connection(self):
+        try:
+            s3 = boto3.client(
+                's3',
+                endpoint_url = self.config['mlflow']['s3_endpoint_url'],
+                aws_acess_key_id = os.getenv('AWS_ACCESS_KEY_ID'),
+                aws_secret_acess_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+            )
+
+            bucket = s3.list_buckets()
+            bucket_names = [b['Name'] for b in buckets.get('Buckets', [])]
+            logger.info('Minio connection verified. Buckets: %s', bucket_names)
+
+            # get the mlflow bucket, if there is none, default to a bucket called mlflow
+            mlflow_bucket = self.config['mlflow'].get('bucket', 'mlflow')
+
+            # if the bucket does not exist, create the bucket in S3W
+            if mlflow_bucket not in bucket_names:
+                s3.create_bucket(Bucket = mlflow_bucket)
+                logger.info('Created missing MLFlow bucket: %s', mlflow_bucket)
+        except Exception as e:
+            logger.error('Minio connection failed: %s', str(e))
 
 # 1. read data from Kafka/read in the data 
 
