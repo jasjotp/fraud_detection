@@ -1,6 +1,8 @@
 import os
 import logging 
 import boto3
+import yaml
+import mlflow
 from dotenv import load_dotenv
 
 logging.basicConfig(
@@ -17,8 +19,8 @@ logger = logging.getLogger(__name__)
 # class that is used for the model training 
 class FraudDetectionTraining:
     def __init__(self, config_path = '/app/config.yaml'):
-        os.environ['GIT_PYTHON_REFRESH'] = 'quiet',
-        os.environ['GIT_PYTHON_GIT_EXECUTABLE'] = '/usr/bin/git',
+        os.environ['GIT_PYTHON_REFRESH'] = 'quiet'
+        os.environ['GIT_PYTHON_GIT_EXECUTABLE'] = '/usr/bin/git'
 
         load_dotenv(dotenv_path = '/app/.env')
 
@@ -33,10 +35,9 @@ class FraudDetectionTraining:
         # ensure our environment is ready before training
         self.validate_environment()
 
-        mlflow.set_tracking_uri(self.config['mlflow']['tracking_url'])
+        mlflow.set_tracking_uri(self.config['mlflow']['tracking_uri'])
         mlflow.set_experiment(self.config['mlflow']['experiment_name'])
 
-        
     # function to load in config.yaml
     def load_config(self, config_path: str) -> dict:
         try:
@@ -67,11 +68,11 @@ class FraudDetectionTraining:
             s3 = boto3.client(
                 's3',
                 endpoint_url = self.config['mlflow']['s3_endpoint_url'],
-                aws_acess_key_id = os.getenv('AWS_ACCESS_KEY_ID'),
-                aws_secret_acess_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+                aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID'),
+                aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
             )
 
-            bucket = s3.list_buckets()
+            buckets = s3.list_buckets()
             bucket_names = [b['Name'] for b in buckets.get('Buckets', [])]
             logger.info('Minio connection verified. Buckets: %s', bucket_names)
 

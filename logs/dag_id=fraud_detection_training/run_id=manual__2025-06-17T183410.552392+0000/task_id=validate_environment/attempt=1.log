@@ -1,0 +1,24 @@
+[2025-06-17T18:34:11.811+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-06-17T18:34:11.841+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.validate_environment manual__2025-06-17T18:34:10.552392+00:00 [queued]>
+[2025-06-17T18:34:11.855+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.validate_environment manual__2025-06-17T18:34:10.552392+00:00 [queued]>
+[2025-06-17T18:34:11.856+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-06-17T18:34:11.878+0000] {taskinstance.py:2890} INFO - Executing <Task(BashOperator): validate_environment> on 2025-06-17 18:34:10.552392+00:00
+[2025-06-17T18:34:11.889+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=5354) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-17T18:34:11.893+0000] {standard_task_runner.py:72} INFO - Started process 5355 to run task
+[2025-06-17T18:34:11.893+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'validate_environment', 'manual__2025-06-17T18:34:10.552392+00:00', '--job-id', '20', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmps4qksyn7']
+[2025-06-17T18:34:11.895+0000] {standard_task_runner.py:105} INFO - Job 20: Subtask validate_environment
+[2025-06-17T18:34:11.970+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.validate_environment manual__2025-06-17T18:34:10.552392+00:00 [running]> on host 0879d5bf0a82
+[2025-06-17T18:34:12.121+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='validate_environment' AIRFLOW_CTX_EXECUTION_DATE='2025-06-17T18:34:10.552392+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-17T18:34:10.552392+00:00'
+[2025-06-17T18:34:12.123+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-06-17T18:34:12.146+0000] {subprocess.py:78} INFO - Tmp dir root location: /tmp
+[2025-06-17T18:34:12.148+0000] {subprocess.py:88} INFO - Running command: ['/usr/bin/bash', '-c', ' \n        echo "Validating environment..."\n        test -f /app/config.yaml &&\n        test -f /app/.env &&\n        echo "Environment is valid!"\n        ']
+[2025-06-17T18:34:12.169+0000] {subprocess.py:99} INFO - Output:
+[2025-06-17T18:34:12.173+0000] {subprocess.py:106} INFO - Validating environment...
+[2025-06-17T18:34:12.174+0000] {subprocess.py:106} INFO - Environment is valid!
+[2025-06-17T18:34:12.175+0000] {subprocess.py:110} INFO - Command exited with return code 0
+[2025-06-17T18:34:12.216+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-06-17T18:34:12.217+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=fraud_detection_training, task_id=validate_environment, run_id=manual__2025-06-17T18:34:10.552392+00:00, execution_date=20250617T183410, start_date=20250617T183411, end_date=20250617T183412
+[2025-06-17T18:34:12.272+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2025-06-17T18:34:12.292+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

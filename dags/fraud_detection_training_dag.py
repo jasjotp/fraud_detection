@@ -1,9 +1,11 @@
 from airflow import DAG 
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.exceptions import AirflowException
 from datetime import datetime, timedelta
 import logging 
 
+logging.basicConfig(level = logging.INFO) 
 logger = logging.getLogger(__name__)
 
 default_args = {
@@ -16,9 +18,21 @@ default_args = {
 
 # function to train the model 
 def train_model(**context):
-    '''Airflow wrapper for training task'''
-    # from fraud_detection_training import FraudDetectionTraining
-    pass
+    '''Airflow wrapper for training task'''    
+    try:
+        logger.info('Initializing fraud detection training...')
+        # call the fraud detection training class to train the model 
+        from fraud_detection_training import FraudDetectionTraining
+        logger.info('Imported FraudDetectionTraining successfully.')
+
+        trainer = FraudDetectionTraining()
+        logger.info('Trainer initialized successfully.')
+
+        return {'status': 'success'}
+
+    except Exception as e:
+        logger.error(f'Training failed: {str(e)}', exc_info = True)
+        raise AirflowException(f'Model training failed: {str(e)}')
 
 with DAG(
     dag_id = 'fraud_detection_training',
