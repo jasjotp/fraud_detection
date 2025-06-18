@@ -3,6 +3,8 @@ import logging
 import boto3
 import yaml
 import mlflow
+import pandas as pd
+import json
 from dotenv import load_dotenv
 
 logging.basicConfig(
@@ -85,14 +87,92 @@ class FraudDetectionTraining:
                 logger.info('Created missing MLFlow bucket: %s', mlflow_bucket)
         except Exception as e:
             logger.error('Minio connection failed: %s', str(e))
+    
+    # function to read in data from Kafka
+    def read_from_kafka(self) -> pd.DataFrame:
+        try:
+            topic = self.config['kafka']['topic']
+            logger.info(f'Connecting to Kafka Topic: {topic}')
 
-# 1. read data from Kafka/read in the data 
+            # ingest data from Kafka using the consumer
+            consumer = KafkaConsumer(
+                topic,
+                bootstrap_servers = self.config['kafka']['bootstrap_servers'].split(','),
+                security_protocol = 'SASL_SSL',
+                sasl_mechanism = 'PLAIN',
+                sasl_plain_username = self.config['kafka']['username'],
+                sasl_plain_password = self.config['kafka']['password'],
+                value_deserializer = lambda x: json.loads(x.decode('utf-8')),
+                auto_offset_reset = 'earliest',
+                consumer_timeout_ms = self.config['kafka'].get('timeout', 10000)
+            )
 
-# observe the label of the data: what % of the data is fradulent and not fraudulent 
+            # read in the message from the consumer 
+            messages = [msg.value for msg in consumer]
+            consumer.close()
 
-# address the class imbalance by using boosting methods so the model can recognize both classes
+            df = pd.DataFrame(messages)
 
-# conduct hypterparameter tuning by outputting a confusion matrix to see how the model is performing 
+            if df.empty:
+                raise ValueError('No message received from Kafka.')
 
-# use the metrics from the model to compare the performance of the current model with the past models to use the best potential model 
+            df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+            
+            # is the is_fraud label is missing, we are missing the label of the data, so raise an error
+            if 'is_fraud' not in df.columns:
+                raise ValueError('Fraud label (is_fraud) missing from Kafka data')
+            # if a transction is classed as non-fraud but is actually fraudulent, we reclassify that transaction as a fraudulent transsaction, so we retrain the model on the new classification
+            
+            # find the fraud rate and log it (percentage of fraudulent transactions)
+            fraud_rate = df['is_fraud'].mean() * 100
+            logger.info(f'Kafka data read successfully with fraud rate: {fraud_rate:.2f}')
+
+            return df 
+
+        except Exception as e:
+            logger.error(f'Failed to read data from Kafka: {str(e)}', exc_info = True)
+            raise 
+    
+    # function to create features that the model can train on 
+    def create_features(self, df: pd.DataFrame) -> pd.DataFrame: 
+        # sort the user id and timestamp in order in ascending order, so we know who performed each transaction first
+        df = df.sort_values(['user_id', 'timestamp']).copy()
+
+        # extract temporal features 
+        # hour of transaction 
+        df['transaction_hour'] = df['timestamp'].dt.hour
+
+        # flag transactions happening at night (between 10PM and 5AM)
+        df['is_night'] = ((df['transaction_hour'] >= 22) | df['transaction_hour'] < 5).astype(int)
+
+        # flag transactions happening on the weekend (Saturday = 5, Sunday = 6)
+        
+
+    # create a function to train the model
+    def train_model(self):
+        try:
+            logger.info('Starting model training process...')
+
+            # read in transaction data from Kafka
+            df = self.read_from_kafka()
+
+            # feature engineering of our raw data into categorical and numerical variables that our model will use 
+            data = self.create_features(df)
+
+        except Exception as e:
+            pass 
+
+        # split the data into train and test data 
+
+        # log model and artifacts in MLFlow
+
+        # preprocessing pipeline 
+
+        # observe the label of the data: what % of the data is fradulent and not fraudulent 
+
+        # address the class imbalance by using boosting methods so the model can recognize both classes
+
+        # conduct hypterparameter tuning by outputting a confusion matrix to see how the model is performing 
+
+        # use the metrics from the model to compare the performance of the current model with the past models to use the best potential model 
 

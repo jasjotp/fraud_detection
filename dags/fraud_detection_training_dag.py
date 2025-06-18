@@ -28,7 +28,10 @@ def train_model(**context):
         trainer = FraudDetectionTraining()
         logger.info('Trainer initialized successfully.')
 
-        return {'status': 'success'}
+        # the trainer will return the model and precision 
+        model, precision = trainer.train_model()
+
+        return {'status': 'success', 'precision': precision}
 
     except Exception as e:
         logger.error(f'Training failed: {str(e)}', exc_info = True)
