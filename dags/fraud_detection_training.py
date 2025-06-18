@@ -146,7 +146,76 @@ class FraudDetectionTraining:
         df['is_night'] = ((df['transaction_hour'] >= 22) | df['transaction_hour'] < 5).astype(int)
 
         # flag transactions happening on the weekend (Saturday = 5, Sunday = 6)
+        df['is_weekend'] = (df['timestamp'].dt.dayofweek >= 5).astype(int)
+
+        # flag transaction day 
+        df['transaction_day'] = df['timestamp'].dt.day
+
+        # flag high velocity transactions (5 or more in the same minute per user)
+        df['minute'] = df['timestamp'].dt.floor('min')
+
+        # count transactions per user per minute 
+        df['user_transactions_per_minute'] = df.groupby(['user_id', 'minute'])['timestamp'].transform('count')
+
+        # flag is transaction count in that minute is 5 or more 
+        df['is_high_velocity'] = (df['user_transactions_per_minute'] >= 5).astype(int)
+
+        # extract a feature to find the number of days it has been since the user transacted 
+        df['days_since_last_transaction'] = (df['timestamp'] - df.groupby('user_id')['timestamp'].shift()).dt.total_seconds() / 86400
+        df['days_since_last_transaction'].fillna(df['days_since_last_transaction'].median(), inplace=True)
+
+        # flag if transactions happen at an hour that is rare for the user 
+        # build a user-hour frequency profile 
+        user_hour_profile = df.groupby(['user_id', 'transaction_hour']).size().groupby('user_id').apply(lambda x: x / x.sum())
         
+        # find the hours where the user rarely trranasacts at (less than 5% of the time)
+        rare_hours = user_hour_profile[user_hour_profile < 0.05].reset_index()
+        rare_hours['is_rare_hour'] = 1
+
+        # merge the rare hours back into the original df 
+        df = df.merge(rare_hours[['user_id', 'transaction_hour', 'is_rare_hour']], on = ['user_id', 'transaction_hour'], how = 'left')
+        df['is_unusual_hour_for_user'] = df['is_rare_hour'].fillna(0).astype(int)
+        df.drop(columns = ['is_rare_hour'], inplace = True)
+
+        # extract behavioural features 
+        # get user activity in last 24 hours: a rolling transaction group on the timestamp, to get each users amount/transaction count in the last 24 hours 
+        df['user_activity_24h'] = df.groupby('user_id', group_keys = False).apply(
+            lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
+        )
+        
+        # extract monetary features
+        # extract the last transaction amount, as compared to the avererage amount of the last 7 days
+        df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
+            lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
+        )
+
+        # extract the current amount compared to the rolling median of past transactions for the user
+        df['amount_vs_median'] = df.groupby('user_id')['amount'].transform(
+            lambda x: (x - x.rolling(window = 5, min_periods = 1).median()).abs()
+        )
+
+        # merchant features 
+        high_risk_merchants = self.config.get('high_risk_merchants', ['QuickCash', 'GlobalDigital', 'FastMoneyX'])
+        df['merchant_risk'] = df['merchant'].isin(high_risk_merchants).astype(int) # 1 or 0 
+
+        # extract a feature to see how often the user interacts with this merchant 
+        df['user_merchant_transaction_count'] = df.groupby(['user_id', 'merchant'])['amount'].transform('count')
+
+        # location based anomoalies 
+        df['prev_location'] = df.groupby('user_id')['location'].shift()
+        df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
+        
+        # extract the feature columns we want to use 
+        feature_cols = [
+            'amount', 'transaction_hour', 'is_night', 'is_weekend',
+            'transaction_day', 'user_transactions_per_minute',
+            'is_high_velocity', 'days_since_last_transaction', 'is_unusual_hour_for_user', 'user_activity_24h',
+            'amount_to_avg_ratio', 'amount_vs_median', 'merchant_risk', 'user_merchant_transaction_count',
+            'is_location_anomalous', 'merchant', 'currency', 'location'
+        ]
+
+        
+
 
     # create a function to train the model
     def train_model(self):
