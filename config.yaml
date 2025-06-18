@@ -16,6 +16,10 @@ kafka:
 
 # features: 
 
-# model:
+model:
+  test_size: 0.2
+  seed: 42 # makes sure model is constant 
+  
+
 
 # spark:

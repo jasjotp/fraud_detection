@@ -6,6 +6,7 @@ import mlflow
 import pandas as pd
 import json
 from dotenv import load_dotenv
+from sklearn.model_selection import train_test_split
 
 logging.basicConfig(
     level = logging.INFO,
@@ -229,11 +230,34 @@ class FraudDetectionTraining:
 
             # feature engineering of our raw data into categorical and numerical variables that our model will use 
             data = self.create_features(df)
+            
+            # you don't want the model to cheat and already know the is_fraud label, so we remove is_fraud from the input column and have it as our prediction column, so splot data into features (X) and target (Y)
+            X = data.drop(columns = ['is_fraud']) # features
+            y = data['is_fraud'] # column we want to predict.classify
+
+            # if there are no positive samples, raise an error
+            if y.sum() == 0:
+                raise ValueError('No positive samples in training data')
+            
+            if y.sum() < 10:
+                logger.warning(f'Low positive samples: {y.sum()} - Consider additional data augmentation')
+
+            # split the data into train and test data (80% of data is used for training and 20% for testing)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, 
+                                                                test_size = self.config['model'].get('test_size', 0.2),
+                                                                stratify = y,
+                                                                random_state = self.config['model'].get('seed', 42)
+            )
+            
+            # start our MLFLow login 
+            
+
+            
+
+
 
         except Exception as e:
             pass 
-
-        # split the data into train and test data 
 
         # log model and artifacts in MLFlow
 
