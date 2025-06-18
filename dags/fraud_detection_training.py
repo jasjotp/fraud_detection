@@ -214,8 +214,10 @@ class FraudDetectionTraining:
             'is_location_anomalous', 'merchant', 'currency', 'location'
         ]
 
-        
+        if 'is_fraud' not in df.columns:
+            raise ValueError('Missing target column: "is_fraud"')
 
+        return df[feature_cols + ['is_fraud']]
 
     # create a function to train the model
     def train_model(self):
