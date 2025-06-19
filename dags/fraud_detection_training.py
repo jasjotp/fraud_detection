@@ -4,9 +4,12 @@ import boto3
 import yaml
 import mlflow
 import pandas as pd
+import numpy as np
 import json
 from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
+from imblearn.pipeline import Pipeline as ImbPipeline
+from sklearn.metrics import fbeta_score, make_scorer
 
 logging.basicConfig(
     level = logging.INFO,
@@ -250,24 +253,94 @@ class FraudDetectionTraining:
             )
             
             # start our MLFLow login 
-            
+            with mlflow.start_run():
+                mlflow.log_metrics({
+                    'train_samples': X_train.shape[0],
+                    'postiive_samples': int(y_train.sum()),
+                    'class_ratio': float(y_train.mean()),
+                    'test_samples': X_test.shape[0]
+                })
 
-            
+                # categorical feature preprocessing
+                preprocessor = ColumnTransformer(
+                    [
+                        ('merchant_encoder', OrdinalEncoder(
+                            handle_unknown = 'use_encoded_value',
+                            unknown_value = -1, 
+                            dtype = np.float32
+                        ), ['merchant'])
+                ], remainder = 'passthrough')
+
+                # XGBoost configuration with efficiency optimizations
+                xgb = XGBClassifier(
+                    eval_metric = 'aucpr', # area under precision recall curve as we have unbalanced data
+                    random_state = self.config['model'].get('seed', 42),
+                    reg_lambda = 1.0, # prevents overfitting
+                    n_estimators = self.config['model']['param']['n_estimators'],
+                    n_job = -1,
+                    tree_method = self.config['model'].get('tree_method', 'hist')
+                )
+
+                # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalacned dataset)
+                pipeline = ImbPipeline([
+                    ('preprocessor': preprocessor),
+                    ('smote', SMOTE(random_state = self.config['model'].get('seed'), 42)), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
+                    ('classifier', xgb) # XGBoost classififer for prediction
+                ], memory = './cache') # put the pipeline in cache so computation is faster
+
+                # hyperparameter search space design
+                param_dist = {
+                    'classifier__max_depth': [3, 5, 7], # gets max tree depth to tune model's complexity
+                    'classifier__learning_rate': [0.01, 0.05, 0.1], # stepsize the shrinkage when you are trying to boost the model and prevent overfitting
+                    'classifier__subsample': [0.6, 0.8, 1.0], # number of samples that are used to fit individual based learners (reduces overfitting)
+                    'classifier__colsample_bytree': [0.6, 0.8, 1.0], # fraction of features used to fit individual based learners (helps with randomness)
+                    'classifier__gamma': [0, 0.1, 0.3], # minimum loss reduction that is required to make further partitions on a leaf node
+                    'classifier__reg_alpha': [0, 0.1, 0.5] # L1 regularizaion term
+                }
+
+                # optimizing for F-beta score (beta=2 emphasizes recall)
+                searcher = RandomizedSearchCV(
+                    pipeline, 
+                    param_dist,
+                    n_iter = 20,
+                    scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
+                    cv = StratifiedKFold(n_splits = 3, shuffle = True),
+                    n_jobs = 1,
+                    refit = True,
+                    error_score = 'raise',
+                    random_state = self.config['model'].get('seed', 42)
+                )
+
+                # conduct hyperparameter tuning by outputting a confusion matrix to see how the model is performing 
+                logger.info('Starting hyperparamter tuning...')
+                searcher.fit(X_train, y_train)
+                
+                # find the best model in the pipeline 
+                best_model = searcher.best_estimator_
+
+                # find best hypeerparameters
+                best_params = searcher.best_params_
+                logger.info(f'Best hyperparameters: {best_params}')
+
+                # threshold optimization using the training data
+                train_proba = best_model.predict_proba(X_train)[:, 1]
+
+                # get the precision and recall
+                precision_arr, recall_arr, thresholds_arr = precision_recall_curve(y_train, train_proba)
+
+                # calculcate the F1 score for each of the thresholds
+                f1_scores = [2 * (p * r) / (p + r) if (p + r) > 0 else 0 for p, r in
+                             zip(precision_arr[:-1], recall_arr[:-1])]
+
+                # find the most optimal threshold by getting the max f1 score
+                best_threshold = thresholds_arr[np.argmax(f1_scores)]
+                logger.info(f'Optimal threhsold determined: {best_threshold:.4f}')
 
 
 
+                # use the metrics from the model to compare the performance of the current model with the past models to use the best potential model 
+                
         except Exception as e:
             pass 
 
-        # log model and artifacts in MLFlow
-
-        # preprocessing pipeline 
-
-        # observe the label of the data: what % of the data is fradulent and not fraudulent 
-
-        # address the class imbalance by using boosting methods so the model can recognize both classes
-
-        # conduct hypterparameter tuning by outputting a confusion matrix to see how the model is performing 
-
-        # use the metrics from the model to compare the performance of the current model with the past models to use the best potential model 
 
