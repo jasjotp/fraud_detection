@@ -12,8 +12,9 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
-from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve
+from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve, confusion_matrix
 from xgboost import XGBClassifier
+import matplotlib.pyplot as plt
 
 logging.basicConfig(
     level = logging.INFO,
@@ -373,6 +374,30 @@ class FraudDetectionTraining:
                 # log the metrics in MLFlow so we can see the performance of our model
                 mlflow.log_metrics(metrics)
                 mlflow.log_params(best_params)
+
+                # plot the confusion matrix 
+                cm = confusion_matrix(y_test, y_pred)
+
+                plt.figure(figsize = (10, 6))
+                plt.imshow(cm, interpolation = 'nearest', cmap = plt.cm.Blues)
+                plt.title('Confusion Matrix')
+                plt.colorbar()
+                tick_marks = np.arange(2)
+                plt.xticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
+                plt.yticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
+                
+                for i in range(2):
+                    for j in range(2):
+                        # TP, FP, TN, FP
+                        plt.text(j, i, format(cm[i, j], 'd'), ha = 'center', va = 'center', color = 'red')
+                plt.tight_layout()
+                cm.filename = 'confusion_matrix.png'
+                plt.savefig(cm_filename)
+                mlflow.log_artifact(cm_filename) # log artifact to MLFlow
+                plt.close()
+                
+                # get the precision and recall curve
+                plt.figure(figsize = 10, 6)
 
 
 
