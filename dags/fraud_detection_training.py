@@ -408,11 +408,21 @@ class FraudDetectionTraining:
                 mlflow.log_artifact(pr_curve_filename) # log precision-recall curve to MLFlow
                 plt.close()
 
-                signature = infer_signature(X_train)
-                
+                # log the best model in MLFlow
+                signature = infer_signature(X_train, y_pred)
+                mlflow.sklearn.log_model(
+                    sk_model = best_model, 
+                    artifact_path = 'model', 
+                    signature = signature,
+                    registered_model_name = 'fraud_detection_model'
+                )
 
+                logger.info(f'Training successfully completed with metrics: {metrics}')
+
+                return best_model, metrics
 
         except Exception as e:
-            pass 
+            logger.error(f'Training failed: {e}', exc_info = True)
+            raise 
 
 
