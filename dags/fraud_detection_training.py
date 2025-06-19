@@ -7,9 +7,13 @@ import pandas as pd
 import numpy as np
 import json
 from dotenv import load_dotenv
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, StratifiedKFold
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OrdinalEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
-from sklearn.metrics import fbeta_score, make_scorer
+from imblearn.over_sampling import SMOTE
+from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve
+from xgboost import XGBClassifier
 
 logging.basicConfig(
     level = logging.INFO,
@@ -263,13 +267,25 @@ class FraudDetectionTraining:
 
                 # categorical feature preprocessing
                 preprocessor = ColumnTransformer(
-                    [
+                    transformers = [
                         ('merchant_encoder', OrdinalEncoder(
                             handle_unknown = 'use_encoded_value',
                             unknown_value = -1, 
                             dtype = np.float32
-                        ), ['merchant'])
-                ], remainder = 'passthrough')
+                        ), ['merchant']),
+                        ('currency_encoder', OrdinalEncoder(
+                            handle_unknown = 'use_encoded_value',
+                            unknown_value = -1, 
+                            dtype = np.float32
+                        ), ['currency']),   
+                        ('location_encoder', OrdinalEncoder(
+                            handle_unknown = 'use_encoded_value',
+                            unknown_value = -1, 
+                            dtype = np.float32
+                        ), ['location']),            
+                    ], 
+                    remainder = 'passthrough'
+                )
 
                 # XGBoost configuration with efficiency optimizations
                 xgb = XGBClassifier(
@@ -336,10 +352,33 @@ class FraudDetectionTraining:
                 best_threshold = thresholds_arr[np.argmax(f1_scores)]
                 logger.info(f'Optimal threhsold determined: {best_threshold:.4f}')
 
+                # model evaluation
+                X_test_processed = best_model.named_steps['preprocessor'].transform(X_test)
+
+                # probability prediction on test set from the classifier 
+                test_proba = best_model.named_steps['classifier'].predict_proba(X_test_processed)[:, 1]
+
+                # apply the optimized threshold to get the biary prediction of whether the transaction is fraud or not 
+                y_pred = (test_proba >= best_threshold).astype(int)
+
+                # log our metrics: AUC, precision, recall, f1score, threshold score
+                metrics = {
+                    'auc_pr': float(average_precision_score(y_test, test_proba)),
+                    'precision': float(precision_score(y_test, y_pred, zero_division = 0)),
+                    'recall': float(recall_score(y_test, y_pred, zero_division = 0)),
+                    'f1': float(f1_score(y_test, y_pred, zero_division = 0)),
+                    'threshold': float(best_threshold)
+                }
+
+                # log the metrics in MLFlow so we can see the performance of our model
+                mlflow.log_metrics(metrics)
+                mlflow.log_params(best_params)
 
 
-                # use the metrics from the model to compare the performance of the current model with the past models to use the best potential model 
-                
+
+
+
+
         except Exception as e:
             pass 
 
