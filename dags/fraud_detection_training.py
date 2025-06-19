@@ -7,12 +7,15 @@ import pandas as pd
 import numpy as np
 import json
 from dotenv import load_dotenv
+from datetime import datetime
+from mlflow.models.signature import infer_signature
+from kafka import KafkaConsumer
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, StratifiedKFold
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
-from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve, confusion_matrix
+from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve, confusion_matrix, f1_score
 from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 
@@ -177,7 +180,7 @@ class FraudDetectionTraining:
         # build a user-hour frequency profile 
         user_hour_profile = df.groupby(['user_id', 'transaction_hour']).size().groupby('user_id').apply(lambda x: x / x.sum())
         
-        # find the hours where the user rarely trranasacts at (less than 5% of the time)
+        # find the hours where the user rarely transacts at (less than 5% of the time)
         rare_hours = user_hour_profile[user_hour_profile < 0.05].reset_index()
         rare_hours['is_rare_hour'] = 1
 
@@ -298,9 +301,9 @@ class FraudDetectionTraining:
                     tree_method = self.config['model'].get('tree_method', 'hist')
                 )
 
-                # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalacned dataset)
+                # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalanced dataset)
                 pipeline = ImbPipeline([
-                    ('preprocessor': preprocessor),
+                    ('preprocessor', preprocessor),
                     ('smote', SMOTE(random_state = self.config['model'].get('seed'), 42)), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
                     ('classifier', xgb) # XGBoost classififer for prediction
                 ], memory = './cache') # put the pipeline in cache so computation is faster
@@ -335,7 +338,7 @@ class FraudDetectionTraining:
                 # find the best model in the pipeline 
                 best_model = searcher.best_estimator_
 
-                # find best hypeerparameters
+                # find best hyperparameters
                 best_params = searcher.best_params_
                 logger.info(f'Best hyperparameters: {best_params}')
 
@@ -374,6 +377,7 @@ class FraudDetectionTraining:
                 # log the metrics in MLFlow so we can see the performance of our model
                 mlflow.log_metrics(metrics)
                 mlflow.log_params(best_params)
+                logger.info(f'Logged metrics: {metrics} and Best Parmaters: {best_params} in MLFlow')
 
                 # plot the confusion matrix 
                 cm = confusion_matrix(y_test, y_pred)
@@ -391,22 +395,25 @@ class FraudDetectionTraining:
                         # TP, FP, TN, FP
                         plt.text(j, i, format(cm[i, j], 'd'), ha = 'center', va = 'center', color = 'red')
                 plt.tight_layout()
-                cm.filename = 'confusion_matrix.png'
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                cm_filename = f'confusion_matrix_{timestamp}.png'
                 plt.savefig(cm_filename)
                 mlflow.log_artifact(cm_filename) # log confusion matrix to MLFlow
                 plt.close()
+                logger.info(f'Logged Confusion Matrix: {cm_filename} in MLFlow')
                 
                 # plot the precision and recall curve
-                plt.figure(figsize = 10, 6)
-                plt.plot(recall_arr, percision_arr, marker = '.', label = 'Precision-Recall Curve')
+                plt.figure(figsize = (10, 6))
+                plt.plot(recall_arr, precision_arr, marker = '.', label = 'Precision-Recall Curve')
                 plt.xlabel('Recall')
                 plt.ylabel('Precision')
                 plt.title('Precision-Recall Curve')
                 plt.legend()
-                pr_curve_filename = 'precision_recall_curve.png'
+                pr_curve_filename = f'precision_recall_curve_{timestamp}.png'
                 plt.savefig(pr_curve_filename)
                 mlflow.log_artifact(pr_curve_filename) # log precision-recall curve to MLFlow
                 plt.close()
+                logger.info(f'Logged Precision-Recall Curve: {pr_curve_filename} in MLFlow')
 
                 # log the best model in MLFlow
                 signature = infer_signature(X_train, y_pred)
