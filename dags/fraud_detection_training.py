@@ -93,7 +93,7 @@ class FraudDetectionTraining:
             # get the mlflow bucket, if there is none, default to a bucket called mlflow
             mlflow_bucket = self.config['mlflow'].get('bucket', 'mlflow')
 
-            # if the bucket does not exist, create the bucket in S3W
+            # if the bucket does not exist, create the bucket in S3
             if mlflow_bucket not in bucket_names:
                 s3.create_bucket(Bucket = mlflow_bucket)
                 logger.info('Created missing MLFlow bucket: %s', mlflow_bucket)
@@ -178,10 +178,16 @@ class FraudDetectionTraining:
 
         # flag if transactions happen at an hour that is rare for the user 
         # build a user-hour frequency profile 
-        user_hour_profile = df.groupby(['user_id', 'transaction_hour']).size().groupby('user_id').apply(lambda x: x / x.sum())
+        user_hour_profile = (
+            df.groupby(['user_id', 'transaction_hour'])
+            .size()
+            .groupby('user_id')
+            .apply(lambda x: x / x.sum())
+            .droplevel(0) # drops the outer user_id index level
+        )
         
         # find the hours where the user rarely transacts at (less than 5% of the time)
-        rare_hours = user_hour_profile[user_hour_profile < 0.05].reset_index()
+        rare_hours = user_hour_profile[user_hour_profile < 0.05].rename('hour_fraction').reset_index()
         rare_hours['is_rare_hour'] = 1
 
         # merge the rare hours back into the original df 
@@ -264,7 +270,7 @@ class FraudDetectionTraining:
             with mlflow.start_run():
                 mlflow.log_metrics({
                     'train_samples': X_train.shape[0],
-                    'postiive_samples': int(y_train.sum()),
+                    'positive_samples': int(y_train.sum()),
                     'class_ratio': float(y_train.mean()),
                     'test_samples': X_test.shape[0]
                 })
@@ -296,15 +302,15 @@ class FraudDetectionTraining:
                     eval_metric = 'aucpr', # area under precision recall curve as we have unbalanced data
                     random_state = self.config['model'].get('seed', 42),
                     reg_lambda = 1.0, # prevents overfitting
-                    n_estimators = self.config['model']['param']['n_estimators'],
-                    n_job = -1,
+                    n_estimators = self.config['model']['params']['n_estimators'],
+                    n_jobs = -1,
                     tree_method = self.config['model'].get('tree_method', 'hist')
                 )
 
                 # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalanced dataset)
                 pipeline = ImbPipeline([
                     ('preprocessor', preprocessor),
-                    ('smote', SMOTE(random_state = self.config['model'].get('seed'), 42)), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
+                    ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
                     ('classifier', xgb) # XGBoost classififer for prediction
                 ], memory = './cache') # put the pipeline in cache so computation is faster
 
@@ -389,6 +395,8 @@ class FraudDetectionTraining:
                 tick_marks = np.arange(2)
                 plt.xticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
                 plt.yticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
+                plt.xlabel('Predicted Label')
+                plt.ylabel('Actual Label')
                 
                 for i in range(2):
                     for j in range(2):
