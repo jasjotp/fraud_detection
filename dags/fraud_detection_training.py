@@ -17,6 +17,7 @@ from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
 from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve, confusion_matrix, f1_score
 from xgboost import XGBClassifier
+from math import sin, cos, pi
 import matplotlib.pyplot as plt
 
 logging.basicConfig(
@@ -153,6 +154,10 @@ class FraudDetectionTraining:
         # extract temporal features 
         # hour of transaction 
         df['transaction_hour'] = df['timestamp'].dt.hour
+        
+        # extract the sine and cosine of the transaction hour so that the model can learn cyclic nature like hour 23 and 0 actually being close to each other
+        df['transaction_hour_sin'] = np.sin(2 * pi * df['hour'] / 24)
+        df['transaction_hour_cos'] = np.cos(2 * pi * df['hour'] / 24)
 
         # flag transactions happening at night (between 10PM and 5AM)
         df['is_night'] = ((df['transaction_hour'] >= 22) | df['transaction_hour'] < 5).astype(int)
@@ -162,6 +167,9 @@ class FraudDetectionTraining:
 
         # flag transaction day 
         df['transaction_day'] = df['timestamp'].dt.day
+
+        # flag transaction day of week 
+        df['transaction_dayOfWeek'] = df['timestamp'].dt.dayofweek
 
         # flag high velocity transactions (5 or more in the same minute per user)
         df['minute'] = df['timestamp'].dt.floor('min')
@@ -201,16 +209,73 @@ class FraudDetectionTraining:
             lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
         )
         
+        # find the average time between past transactions per user
+        df['time_diff'] = df.groupby('user_id')['timestamp'].diff().dt.total_seconds()
+
+        # find the rolling average transaction interval for that user for each transaction (find each users average time between past transactions)
+        df['user_avg_transaction_interval'] = (
+            df.groupby('user_id')['time_diff']
+            .expanding()
+            .mean()
+            .shift()
+            .reset_index(level = 0, drop = True)
+        )
+
+        # calculate the zscore amount per user to catch outliers based on each user's transaction history 
+        # calcualte each user's rolling mean and std to date using expanding()
+        df['zscore_amount_per_user'] = (
+            df.groupby('user_id')['amount']
+            .apply(lambda x: (x - x.expanding().mean().shift()) / x.expanding().std().shift())
+            .reset_index(level = 0, drop = True)
+            .replace([np.inf, -np.inf], 0)  # handle division by 0
+            .fillna(0)  # handle missing values
+        )
+
         # extract monetary features
-        # extract the last transaction amount, as compared to the avererage amount of the last 7 days
+        # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
         df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
             lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
         )
 
-        # extract the current amount compared to the rolling median of past transactions for the user
+        # extract the average amount spent by each user in the last 7 days 
+        df['amount_7d_avg'] = (
+            df.set_index('timestamp')
+                .groupby('user_id')['amount']
+                .rolling('7d', min_periods = 1)
+                .mean()
+                .reset_index(level = 0, drop = True)
+        )
+
+        # extract the current transaction amount compared to the average transaction amount for the last 7 days for the user as a ratio 
+        df['amount_to_avg_ratio_7d'] = df['amount0'] / df['amount_7d_avg']
+        df['amount_to_avg_ratio_7d'] = df['amount_to_avg_ratio_7d'].fillna(1.0)
+
+        # extract the current amount compared to the rolling median of the past 5 transactions for the user
         df['amount_vs_median'] = df.groupby('user_id')['amount'].transform(
             lambda x: (x - x.rolling(window = 5, min_periods = 1).median()).abs()
         )
+
+        # total historical spend per user (cumulative) to date (excluding current date)
+        df['user_total_spend_todate'] = df.groupby('user_id')['amount'].cumsum().shift().fillna(0)
+
+        # calculate the amount spent for each user in the last 24h, excluding the current transaction
+        df['amount_spent_last24h'] = (
+            df.groupby('user_id', group_keys = False)
+                .apply(lambda g: g['amount']
+                .rolling('24h', on = 'timestamp', closed = 'left')
+                .sum())
+            )
+
+        # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
+        df['user_spending_ratio_last24h'] = (
+            df['amount_spent_last24h'] / df['user_total_spend_todate'].replace(0, np.nan)
+        ).fillna(0)
+
+        # find the current amount's ratio compared to the previous ratio, as big jumps in amount can signal unusual behaviour
+        df['prev_amount'] = df.groupby('user_id')['amount'].shift()
+        df['amount_change_ratio'] = (
+            (df['amount'] - df['prev_amount']) / df['prev_amount'].replace(0, np.nan)
+        ).fillna(0)
 
         # merchant features 
         high_risk_merchants = self.config.get('high_risk_merchants', ['QuickCash', 'GlobalDigital', 'FastMoneyX'])
@@ -218,6 +283,25 @@ class FraudDetectionTraining:
 
         # extract a feature to see how often the user interacts with this merchant 
         df['user_merchant_transaction_count'] = df.groupby(['user_id', 'merchant'])['amount'].transform('count')
+
+        # since fraudsters often test stolen cards across many vendors quickly, count unique merchants for each user_id in a rolling 24 hour window 
+        df['num_distinct_merchants_24h'] = (
+            df.set_index('timestamp')
+            .groupby('user_id')['merchant']
+            .rolling('24h', closed = 'left')
+            .apply(lambda x: x.nunique(), raw = False)
+            .reset_index(level = 0, drop = True)
+        )
+        df = df.reset_index() # bring timestamp back as a column
+
+        # calculate the merchant's average fraud rate on past transactions 
+        df['merchant_avg_fraud_rate'] = (
+            df.groupby('merchant')['is_fraud']
+            .expanding()
+            .mean()
+            .shift()
+            .reset_index(level = 0, drop = True)
+        )
 
         # location based anomoalies 
         df['prev_location'] = df.groupby('user_id')['location'].shift()
@@ -229,7 +313,7 @@ class FraudDetectionTraining:
             'transaction_day', 'user_transactions_per_minute',
             'is_high_velocity', 'days_since_last_transaction', 'is_unusual_hour_for_user', 'user_activity_24h',
             'amount_to_avg_ratio', 'amount_vs_median', 'merchant_risk', 'user_merchant_transaction_count',
-            'is_location_anomalous', 'merchant', 'currency', 'location'
+            'num_distinct_merchants_24h', 'is_location_anomalous', 'merchant', 'currency', 'location'
         ]
 
         if 'is_fraud' not in df.columns:
@@ -439,5 +523,3 @@ class FraudDetectionTraining:
         except Exception as e:
             logger.error(f'Training failed: {e}', exc_info = True)
             raise 
-
-
