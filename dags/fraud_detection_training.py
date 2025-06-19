@@ -393,15 +393,23 @@ class FraudDetectionTraining:
                 plt.tight_layout()
                 cm.filename = 'confusion_matrix.png'
                 plt.savefig(cm_filename)
-                mlflow.log_artifact(cm_filename) # log artifact to MLFlow
+                mlflow.log_artifact(cm_filename) # log confusion matrix to MLFlow
                 plt.close()
                 
-                # get the precision and recall curve
+                # plot the precision and recall curve
                 plt.figure(figsize = 10, 6)
+                plt.plot(recall_arr, percision_arr, marker = '.', label = 'Precision-Recall Curve')
+                plt.xlabel('Recall')
+                plt.ylabel('Precision')
+                plt.title('Precision-Recall Curve')
+                plt.legend()
+                pr_curve_filename = 'precision_recall_curve.png'
+                plt.savefig(pr_curve_filename)
+                mlflow.log_artifact(pr_curve_filename) # log precision-recall curve to MLFlow
+                plt.close()
 
-
-
-
+                signature = infer_signature(X_train)
+                
 
 
         except Exception as e:
