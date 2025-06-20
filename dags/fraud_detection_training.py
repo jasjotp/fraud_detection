@@ -45,7 +45,7 @@ def flag_new_values_vectorized(df, group_col: str, value_col: str, new_flag_col:
 # helper function to flag if the transaction's location is different from user's most common location (home location)
 def flag_home_location_mismatches(df):
     # get the most common location, using the mode, per user 
-    home_locations = df.groupby{'user_id'}['location'].agg(lambda x: x.mode()[0])
+    home_locations = df.groupby('user_id')['location'].agg(lambda x: x.mode()[0])
 
     # map each home location to each row 
     df['home_location'] = df['user_id'].map(home_locations)
@@ -56,15 +56,16 @@ def flag_home_location_mismatches(df):
 
 # helper function to compute the rolling count of features 
 def compute_rolling_unique_count(df, group_col: str, target_col: str, time_window: str, new_col_name: str) -> pd.Series:
-    return (
+    tmp = (
         df.set_index('timestamp')
         .groupby(group_col)[target_col]
         .rolling(time_window, closed = 'left')
         .apply(lambda x: x.nunique(), raw = False)
-        .reset_index(level = 0, drop = True)
-        .reindex(df.index)
-        .rename(new_col_name)
+        .reset_index()
+        .rename(columns = {target_col: new_col_name})
     )
+
+    return df.merge(tmp, on = [group_col, 'timestamp'], how = 'left')
 
 # class that is used for the model training 
 class FraudDetectionTraining:
@@ -242,10 +243,12 @@ class FraudDetectionTraining:
         # get user activity in last 24 hours: a rolling transaction group on the timestamp, to get each users amount/transaction count in the last 24 hours 
         df['user_activity_24h'] = (
             df.groupby('user_id', group_keys = False)
-            .apply(lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0))
-            .reindex(df.index)
+            .apply(lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount']
+            .count()
+            .fillna(0))
+            .reset_index(level = 0, drop = True)
         )
-        
+
         # find the average time between past transactions per user
         df['time_diff'] = df.groupby('user_id')['timestamp'].diff().dt.total_seconds()
 
@@ -264,17 +267,17 @@ class FraudDetectionTraining:
             df.groupby('user_id')['amount']
             .apply(lambda x: (x - x.expanding().mean().shift()) / x.expanding().std().shift())
             .reset_index(level = 0, drop = True)
-            .replace([np.inf, -np.inf], 0)  # handle division by 0
-            .fillna(0)  # handle missing values
-            .reindex(df.index)
+            .replace([np.inf, -np.inf], 0)
+            .fillna(0)
         )
 
         # extract monetary features
         # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
         df['amount_to_avg_ratio'] = (
-            df.groupby('user_id', group_keys = False)
-            .apply(lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0))
-            .reindex(df.index)
+            df.groupby('user_id')['amount']
+            .apply(lambda g: g / g.rolling(7, min_periods = 1).mean())
+            .reset_index(level = 0, drop = True)
+            .fillna(1.0)
         )
 
         # extract the average amount spent by each user in the last 7 days 
@@ -284,7 +287,6 @@ class FraudDetectionTraining:
                 .rolling('7d', min_periods = 1)
                 .mean()
                 .reset_index(level = 0, drop = True)
-                .reindex(df.index)
         )
 
         # extract the current transaction amount compared to the average transaction amount for the last 7 days for the user as a ratio 
@@ -301,11 +303,11 @@ class FraudDetectionTraining:
 
         # calculate the amount spent for each user in the last 24h, excluding the current transaction
         df['amount_spent_last24h'] = (
-            df.groupby('user_id', group_keys = False)
-                .apply(lambda g: g['amount']
-                .rolling('24h', on = 'timestamp', closed = 'left')
-                .sum())
-                .reindex(df.index)
+            df.set_index('timestamp')
+                .groupby('user_id')['amount']
+                .rolling('24h', closed = 'left')
+                .sum()
+                .reset_index(level = 0, drop = True)
         )
 
         # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
@@ -333,8 +335,10 @@ class FraudDetectionTraining:
             .rolling('24h', closed = 'left')
             .apply(lambda x: x.nunique(), raw = False)
             .reset_index(level = 0, drop = True)
-            .reindex(df.index)
         )
+
+        df['num_distinct_merchants_24h'] = df['num_distinct_merchants_24h'].fillna(0)
+
         df = df.reset_index() # bring timestamp back as a column
 
         # calculate the merchant's average fraud rate on past transactions 
