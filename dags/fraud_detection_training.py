@@ -281,13 +281,17 @@ class FraudDetectionTraining:
         )
 
         # extract the average amount spent by each user in the last 7 days 
-        df['amount_7d_avg'] = (
+        amount_7d_avg = (
             df.set_index('timestamp')
                 .groupby('user_id')['amount']
                 .rolling('7d', min_periods = 1)
                 .mean()
-                .reset_index(level = 0, drop = True)
+                .reset_index()
+                .rename(columns = {'amount': 'amount_7d_avg'})
         )
+
+        # merge the average amount spent by each user in the last 7 days correctly
+        df = df.merge(amount_7d_avg, on = ['user_id', 'timestamp'], how = 'left')
 
         # extract the current transaction amount compared to the average transaction amount for the last 7 days for the user as a ratio 
         df['amount_to_avg_ratio_7d'] = df['amount'] / df['amount_7d_avg']
@@ -302,13 +306,17 @@ class FraudDetectionTraining:
         df['user_total_spend_todate'] = df.groupby('user_id')['amount'].cumsum().shift().fillna(0)
 
         # calculate the amount spent for each user in the last 24h, excluding the current transaction
-        df['amount_spent_last24h'] = (
+        amount_spent_last24h = (
             df.set_index('timestamp')
                 .groupby('user_id')['amount']
                 .rolling('24h', closed = 'left')
                 .sum()
-                .reset_index(level = 0, drop = True)
+                .reset_index()
+                .rename(columns = {'amount': 'amount_spent_last24h'})
         )
+
+        # merge the average amount spent by each user in the last 24 hours correctly back to main df
+        df = df.merge(amount_spent_last24h, on = ['user_id', 'timestamp'], how = 'left')
 
         # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
         df['user_spending_ratio_last24h'] = (
@@ -329,15 +337,17 @@ class FraudDetectionTraining:
         df['user_merchant_transaction_count'] = df.groupby(['user_id', 'merchant'])['amount'].transform('count')
 
         # since fraudsters often test stolen cards across many vendors quickly, count unique merchants for each user_id in a rolling 24 hour window 
-        df['num_distinct_merchants_24h'] = (
+        num_distinct_merchants_24h = (
             df.set_index('timestamp')
             .groupby('user_id')['merchant']
             .rolling('24h', closed = 'left')
             .apply(lambda x: x.nunique(), raw = False)
-            .reset_index(level = 0, drop = True)
+            .reset_index()
+            .rename(columns = {'merchant': 'num_distinct_merchants_24h'})
         )
-
-        df['num_distinct_merchants_24h'] = df['num_distinct_merchants_24h'].fillna(0)
+        
+        # merge the number of merchants for each user in the last 24 hours correctly back to main df
+        df = df.merge(num_distinct_merchants_24h, on = ['user_id', 'timestamp'], how = 'left')
 
         df = df.reset_index() # bring timestamp back as a column
 
