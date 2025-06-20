@@ -307,6 +307,8 @@ class FraudDetectionTraining:
         df['prev_location'] = df.groupby('user_id')['location'].shift()
         df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
         
+        # IP address and device based anomalies 
+        
         # extract the feature columns we want to use 
         feature_cols = [
             'amount', 'transaction_hour', 'is_night', 'is_weekend',

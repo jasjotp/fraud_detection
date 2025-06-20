@@ -9,7 +9,6 @@ from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import signal
 from typing import Optional, Dict, Any
-from datetime import timezone
 from jsonschema import validate, ValidationError, FormatChecker
 import time
 
@@ -40,9 +39,13 @@ TRANSACTION_SCHEMA = {
             "format": "date-time"
         },
         "location": {"type": "string", "pattern": "^[A-Z]{2}$"},
-        "is_fraud": {"type": "integer", "minimum": 0, "maximum": 1}
+        "device_id": {"type": "string"},
+        "ip_address": {"type": "string", "format": "ipv4"},
+        "new_device_flag": {"type": "integer", "minimum": 0, "maximum": 1},
+        "is_fraud": {"type": "integer", "minimum": 0, "maximum": 1},
+        'note': {"type": "string"}
     },
-    "required": ["transaction_id", "user_id", "amount", "currency", "timestamp", 'is_fraud']
+    "required": ["transaction_id", "user_id", "amount", "currency", "merchant", "timestamp", "location", "device_id", "ip_address", "new_device_flag", "is_fraud", "note"]
 }
 
 class TransactionProducer():
@@ -53,6 +56,8 @@ class TransactionProducer():
         self.topic = os.getenv('KAFKA_TOPIC', 'transactions')
         self.running = False
         self.user_transaction_history = defaultdict(list) # track past transaction times for velocity check
+        self.user_devices = defaultdict(lambda: random.sample([fake.uuid4() for _ in range(5)], random.randint(1, 3)))
+        self.user_ips = defaultdict(lambda: random.sample([fake.ipv4_public() for _ in range(5)], random.randint(1, 3)))
 
         # confluent kafka configuration
         self.producer_config = {
@@ -84,6 +89,31 @@ class TransactionProducer():
         # handle the compromised users/merchants, that we know are risky
         self.compromised_users = set(random.sample(range(1000, 9999), 50)) # set 0.5% of users to be comprimised users (0.5% so the model does not predict comprimised users too often)
         self.high_risk_merchants = ['QuickCash', 'GlobalDigital', 'FastMoneyX']
+        self.country_list = [
+            'US',  # United States
+            'CA',  # Canada
+            'GB',  # United Kingdom
+            'DE',  # Germany
+            'FR',  # France
+            'AU',  # Australia
+            'IN',  # India
+            'SG',  # Singapore
+            'NL',  # Netherlands
+            'SE',  # Sweden
+            'JP',  # Japan
+            'KR',  # South Korea
+            'BR',  # Brazil
+            'ZA',  # South Africa
+            'MX',  # Mexico
+            'IT',  # Italy
+            'ES',  # Spain
+            'AE',  # United Arab Emirates
+            'HK',  # Hong Kong
+            'CH'   # Switzerland
+        ]
+        self.user_home_country_map = {
+            user_id: random.choice(self.country_list) for user_id in range(1000, 10000)
+        }
         self.fraud_pattern_weights = {
             'account_takeover': 0.4, # 40% of fraud cases when someone takes over your account (they get your password for example, as this is the most common for fraud cases)
             'card_testing': 0.3, # 30% of fraud cases when someone tests your card to see if it has money or not
@@ -118,7 +148,32 @@ class TransactionProducer():
         # if the user has 5 or more transactions in the last minute, then set the transaction to fraud 
         if len(recent_times) >= 5:
             transaction['is_fraud'] = 1 
-            transaction['note'] = 'Velocity pattern detected'
+            transaction['note'] = 'High Transaction Velocity anomaly detected'
+    
+    # function to get the transactions location for an anomaly 
+    def get_transaction_location(self, user_id: int, anomaly_chance: float = 0.01) -> str:
+        home_country = self.user_home_country_map[user_id]
+
+        if random.random() < anomaly_chance:
+            alt_countries = [country for country in self.country_list if country != home_country]
+            return random.choice(alt_countries)
+        return home_country
+
+    # function to simulate unseen device and IP address 
+    def get_device_info(self, user_id: int, anomaly_chance: float = 0.01) -> Dict[str, Any]:
+        if random.random() < anomaly_chance:
+            # simulate a new device/IP address 
+            return {
+                'device_id': str(fake.uuid4()),
+                'ip_address': fake.ipv4_public(),
+                'new_device_flag': 1
+            }
+        else:
+            return {
+                'device_id': random.choice(self.user_devices[user_id]),
+                'ip_address': random.choice(self.user_ips[user_id]),
+                'new_device_flag': 0 
+            }
 
     # function to validate a transaction 
     def validate_transaction(self, transaction) -> bool:
@@ -136,21 +191,25 @@ class TransactionProducer():
 
     # function to generate the transaction: returns a dict in a string format of the transaction 
     def generate_transaction(self) -> Optional[Dict[str, Any]]:
+        user_id = random.randint(1000, 9999)
         transaction = {
             'transaction_id': fake.uuid4(),
-            'user_id': random.randint(1000, 9999),
+            'user_id': user_id,
             'amount': round(fake.pyfloat(min_value = 0.01, max_value = 10000), 2),
             'currency': 'USD',
             'merchant': fake.company(),
             'timestamp': (datetime.now(timezone.utc) + timedelta(seconds = random.randint(-300, 3000))).isoformat(), # use UTC time so we know there is no discrepancy between transactions that happen in different timezones
-            'location': fake.country_code(),
-            'is_fraud': 0
+            'location': self.get_transaction_location(user_id),
+            'is_fraud': 0,
+            'note': ''
         }
 
         is_fraud = 0 
         amount = transaction['amount']
         user_id = transaction['user_id']
         merchant = transaction['merchant']
+        device_info = self.get_device_info(user_id)
+        transaction.update(device_info)
 
         # apply patterns to generate the fradulent transaction and make sure the transaction is set to fraudulent (is_fraud = 1)
 
@@ -165,6 +224,7 @@ class TransactionProducer():
                 is_fraud = 1 
                 transaction['amount'] = random.uniform(500, 5000)
                 transaction['merchant'] = random.choice(self.high_risk_merchants)
+                transaction['note'] = 'Account Takeover anomaly detected'
 
         # card testing 
         if not is_fraud and amount < 2.0:
@@ -173,18 +233,24 @@ class TransactionProducer():
                 is_fraud = 1 
                 transaction['amount'] = round(random.uniform(0.01, 2), 2)
                 transaction['location'] = 'US'
+                transaction['note'] = 'Card Testing anomaly detected'
 
         # merchant collusion 
         if not is_fraud and merchant in self.high_risk_merchants:
             if amount > 3000 and random.random() < 0.15:
                 is_fraud = 1 
                 transaction['amount'] = round(random.uniform(300, 1500), 2)
+                transaction['note'] = 'Merchant Collusion anomaly detected'
           
         # geographic anomalies 
-        if not is_fraud:
-            if user_id % 500 == 0 and random.random() < 0.1:
-                is_fraud = 1 
-                transaction['location'] = random.choice(['CHINA', 'RUSSIA', 'SAUDI ARABIA', 'PAKISTAN', 'INDIA'])
+        if not is_fraud and transaction['location'] != self.user_home_country_map[user_id]:
+            is_fraud = 1 
+            transaction['note'] = 'Geo anomaly detected'
+
+        # flag new device anomalies 
+        if not is_fraud and device_info['new_device_flag'] == 1:
+            is_fraud = 1 
+            transaction['note'] = 'New device anomaly detected'
 
         # eshtablish the baseline for random fraud (~0.1 - 0.3%)
         if not is_fraud and random.random() < 0.002:
@@ -192,7 +258,9 @@ class TransactionProducer():
             transaction['amount'] = random.uniform(100, 2000)
 
         # ensure that the final fraud rate is between 1-2% 
-        transaction['is_fraud'] = is_fraud if random.random() < 0.985 else 0 
+        if not is_fraud and random.random() < 0.015:
+            is_fraud = 1
+        transaction['is_fraud'] = is_fraud
 
         # validate the modified transaction 
         if self.validate_transaction(transaction):
@@ -247,7 +315,6 @@ class TransactionProducer():
 
             if self.producer:
                 self.producer.flush(timeout = 30)
-                self.producer.close()
             logger.info('Producer stopped...')
 
 # entry point
