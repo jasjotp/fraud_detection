@@ -109,7 +109,7 @@ class TransactionProducer():
             'ES',  # Spain
             'AE',  # United Arab Emirates
             'HK',  # Hong Kong
-            'CH'   # Switzerland
+            'CH'   # China
         ]
         self.user_home_country_map = {
             user_id: random.choice(self.country_list) for user_id in range(1000, 10000)

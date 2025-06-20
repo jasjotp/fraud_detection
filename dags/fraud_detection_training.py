@@ -31,6 +31,41 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# helper function to flag if a value is new for a user compared to their previous ones, for location, device_id, and ip_address
+def flag_new_values_vectorized(df, group_col: str, value_col: str, new_flag_col: str) -> pd.DataFrame:
+    def mark_new(series):
+        seen = set()
+
+        # if x hasn’t been seen, mark as 1 and add to seen, otherwise mark as 0
+        return series.apply(lambda x: 1 if x not in seen and not seen.add(x) else 0)
+    
+    df[new_flag_col] = df.groupby(group_col)[value_col].transform(mark_new)
+    return df
+
+# helper function to flag if the transaction's location is different from user's most common location (home location)
+def flag_home_location_mismatches(df):
+    # get the most common location, using the mode, per user 
+    home_locations = df.groupby{'user_id'}['location'].agg(lambda x: x.mode()[0])
+
+    # map each home location to each row 
+    df['home_location'] = df['user_id'].map(home_locations)
+
+    # flag if transaction location != home location 
+    df['is_location_mismatch'] = (df['location'] != df['home_location']).astype(int)
+    return df 
+
+# helper function to compute the rolling count of features 
+def compute_rolling_unique_count(df, group_col: str, target_col: str, time_window: str, new_col_name: str) -> pd.Series:
+    return (
+        df.set_index('timestamp')
+        .groupby(group_col)[target_col]
+        .rolling(time_window, closed = 'left')
+        .apply(lambda x: x.nunique(), raw = False)
+        .reset_index(level = 0, drop = True)
+        .reindex(df.index)
+        .rename(new_col_name)
+    )
+
 # class that is used for the model training 
 class FraudDetectionTraining:
     def __init__(self, config_path = '/app/config.yaml'):
@@ -156,8 +191,8 @@ class FraudDetectionTraining:
         df['transaction_hour'] = df['timestamp'].dt.hour
         
         # extract the sine and cosine of the transaction hour so that the model can learn cyclic nature like hour 23 and 0 actually being close to each other
-        df['transaction_hour_sin'] = np.sin(2 * pi * df['hour'] / 24)
-        df['transaction_hour_cos'] = np.cos(2 * pi * df['hour'] / 24)
+        df['transaction_hour_sin'] = np.sin(2 * pi * df['transaction_hour'] / 24)
+        df['transaction_hour_cos'] = np.cos(2 * pi * df['transaction_hour'] / 24)
 
         # flag transactions happening at night (between 10PM and 5AM)
         df['is_night'] = ((df['transaction_hour'] >= 22) | df['transaction_hour'] < 5).astype(int)
@@ -205,8 +240,10 @@ class FraudDetectionTraining:
 
         # extract behavioural features 
         # get user activity in last 24 hours: a rolling transaction group on the timestamp, to get each users amount/transaction count in the last 24 hours 
-        df['user_activity_24h'] = df.groupby('user_id', group_keys = False).apply(
-            lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
+        df['user_activity_24h'] = (
+            df.groupby('user_id', group_keys = False)
+            .apply(lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0))
+            .reindex(df.index)
         )
         
         # find the average time between past transactions per user
@@ -229,12 +266,15 @@ class FraudDetectionTraining:
             .reset_index(level = 0, drop = True)
             .replace([np.inf, -np.inf], 0)  # handle division by 0
             .fillna(0)  # handle missing values
+            .reindex(df.index)
         )
 
         # extract monetary features
         # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
-        df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
-            lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
+        df['amount_to_avg_ratio'] = (
+            df.groupby('user_id', group_keys = False)
+            .apply(lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0))
+            .reindex(df.index)
         )
 
         # extract the average amount spent by each user in the last 7 days 
@@ -244,10 +284,11 @@ class FraudDetectionTraining:
                 .rolling('7d', min_periods = 1)
                 .mean()
                 .reset_index(level = 0, drop = True)
+                .reindex(df.index)
         )
 
         # extract the current transaction amount compared to the average transaction amount for the last 7 days for the user as a ratio 
-        df['amount_to_avg_ratio_7d'] = df['amount0'] / df['amount_7d_avg']
+        df['amount_to_avg_ratio_7d'] = df['amount'] / df['amount_7d_avg']
         df['amount_to_avg_ratio_7d'] = df['amount_to_avg_ratio_7d'].fillna(1.0)
 
         # extract the current amount compared to the rolling median of the past 5 transactions for the user
@@ -264,7 +305,8 @@ class FraudDetectionTraining:
                 .apply(lambda g: g['amount']
                 .rolling('24h', on = 'timestamp', closed = 'left')
                 .sum())
-            )
+                .reindex(df.index)
+        )
 
         # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
         df['user_spending_ratio_last24h'] = (
@@ -291,6 +333,7 @@ class FraudDetectionTraining:
             .rolling('24h', closed = 'left')
             .apply(lambda x: x.nunique(), raw = False)
             .reset_index(level = 0, drop = True)
+            .reindex(df.index)
         )
         df = df.reset_index() # bring timestamp back as a column
 
@@ -307,15 +350,38 @@ class FraudDetectionTraining:
         df['prev_location'] = df.groupby('user_id')['location'].shift()
         df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
         
+        # flag if the location is a new location compared to previous locations 
+        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'location', new_flag_col = 'new_location_flag')
+
+        # flag if the user's home location (most common location) is different than the transactions location (is_location_mismatch)
+        df = flag_home_location_mismatches(df)
+
         # IP address and device based anomalies 
-        
+        # extract the device count per user for the last 24h and 7 days 
+        df['device_count_24h'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'device_id', time_window = '24h', new_col_name = 'device_count_24h')
+        df['device_count_7d'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'device_id', time_window = '7d', new_col_name = 'device_count_7d')
+
+        # create a new device flag, is the device is a new device compared to historical devices for that user, flag it as 1 
+        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'device_id', new_flag_col = 'new_device_flag')
+
+        # extract the ip address count per user for the last 24h and the last 7 days: high count could mean compromised
+        df['ip_count_24h'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'ip_address', time_window = '24h', new_col_name = 'ip_count_24h')
+        df['ip_count_7d'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'ip_address', time_window = '7d', new_col_name = 'ip_count_7d')
+
+        # create a new IP address flag, if the transaction has a new IP address compared to historical IP addresses for that user, flag it as 1 
+        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'ip_address', new_flag_col = 'new_ip_flag')
+
         # extract the feature columns we want to use 
         feature_cols = [
-            'amount', 'transaction_hour', 'is_night', 'is_weekend',
-            'transaction_day', 'user_transactions_per_minute',
-            'is_high_velocity', 'days_since_last_transaction', 'is_unusual_hour_for_user', 'user_activity_24h',
-            'amount_to_avg_ratio', 'amount_vs_median', 'merchant_risk', 'user_merchant_transaction_count',
-            'num_distinct_merchants_24h', 'is_location_anomalous', 'merchant', 'currency', 'location'
+            'amount', 'transaction_hour', 'transaction_hour_sin', 'transaction_hour_cos',
+            'is_night', 'is_weekend','transaction_day', 'transaction_dayOfWeek',
+            'user_transactions_per_minute','is_high_velocity', 'is_unusual_hour_for_user', 
+            'user_activity_24h', 'time_diff', 'user_avg_transaction_interval', 'zscore_amount_per_user',
+            'amount_to_avg_ratio', 'amount_7d_avg', 'amount_to_avg_ratio_7d', 'amount_vs_median', 'user_total_spend_todate',
+            'amount_spent_last24h', 'user_spending_ratio_last24h', 'prev_amount', 'amount_change_ratio',
+            'merchant_risk', 'user_merchant_transaction_count','num_distinct_merchants_24h', 'merchant_avg_fraud_rate', 
+            'prev_location', 'is_location_anomalous', 'device_count_24h', 'device_count_7d', 'new_device_flag',
+            'ip_count_24h', 'ip_count_7d', 'new_ip_flag', 'merchant', 'currency', 'location'
         ]
 
         if 'is_fraud' not in df.columns:
