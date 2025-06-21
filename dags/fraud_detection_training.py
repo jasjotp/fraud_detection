@@ -461,23 +461,15 @@ class FraudDetectionTraining:
                 })
 
                 # categorical feature preprocessing
+                categorical_features = ['merchant', 'currency', 'location', 'prev_location']
+
                 preprocessor = ColumnTransformer(
                     transformers = [
-                        ('merchant_encoder', OrdinalEncoder(
+                        ('cat_encoder', OrdinalEncoder(
                             handle_unknown = 'use_encoded_value',
                             unknown_value = -1, 
                             dtype = np.float32
-                        ), ['merchant']),
-                        ('currency_encoder', OrdinalEncoder(
-                            handle_unknown = 'use_encoded_value',
-                            unknown_value = -1, 
-                            dtype = np.float32
-                        ), ['currency']),   
-                        ('location_encoder', OrdinalEncoder(
-                            handle_unknown = 'use_encoded_value',
-                            unknown_value = -1, 
-                            dtype = np.float32
-                        ), ['location']),            
+                        ), categorical_features),          
                     ], 
                     remainder = 'passthrough'
                 )
