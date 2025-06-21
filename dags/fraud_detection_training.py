@@ -6,6 +6,7 @@ import mlflow
 import pandas as pd
 import numpy as np
 import json
+import psutil
 from dotenv import load_dotenv
 from datetime import datetime
 from mlflow.models.signature import infer_signature
@@ -427,7 +428,7 @@ class FraudDetectionTraining:
             'amount_to_avg_ratio', 'amount_7d_avg', 'amount_to_avg_ratio_7d', 'amount_vs_median', 'user_total_spend_todate',
             'amount_spent_last24h', 'user_spending_ratio_last24h', 'prev_amount', 'amount_change_ratio',
             'merchant_risk', 'user_merchant_transaction_count','num_distinct_merchants_24h', 'merchant_avg_fraud_rate', 
-            'prev_location', 'is_location_anomalous', 'device_count_24h', 'device_count_7d', 'new_device_flag',
+            'is_location_anomalous', 'device_count_24h', 'device_count_7d', 'new_device_flag',
             'ip_count_24h', 'ip_count_7d', 'new_ip_flag', 'merchant', 'currency', 'location'
         ]
 
@@ -440,7 +441,7 @@ class FraudDetectionTraining:
         if nan_counts.any():
             logger.warning(f'Still found NaNs in these columns: {nan_counts[nan_counts > 0].to_dict()} - Filling them with 0')
             df[feature_cols] = df[feature_cols].fillna(0) # if there are any NaNs left, fill them with 0 after logging
-            
+
         return df[feature_cols + ['is_fraud']]
 
     # create a function to train the model
@@ -471,6 +472,7 @@ class FraudDetectionTraining:
                                                                 stratify = y,
                                                                 random_state = self.config['model'].get('seed', 42)
             )
+            X_train = X_train.astype(np.float32)
             
             # start our MLFLow login 
             with mlflow.start_run():
@@ -482,7 +484,8 @@ class FraudDetectionTraining:
                 })
 
                 # categorical feature preprocessing
-                categorical_features = ['merchant', 'currency', 'location', 'prev_location']
+                categorical_features = ['merchant', 'currency', 'location']
+                df[categorical_features] = df[categorical_features].astype(str)
 
                 preprocessor = ColumnTransformer(
                     transformers = [
@@ -526,7 +529,7 @@ class FraudDetectionTraining:
                 searcher = RandomizedSearchCV(
                     pipeline, 
                     param_dist,
-                    n_iter = 20,
+                    n_iter = 15,
                     scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
                     cv = StratifiedKFold(n_splits = 3, shuffle = True),
                     n_jobs = 1,
@@ -536,6 +539,7 @@ class FraudDetectionTraining:
                 )
 
                 # conduct hyperparameter tuning by outputting a confusion matrix to see how the model is performing 
+                logger.info(f'Memory usage before training (MB): {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2:.2f}') # to see if out of memory errors are a reason for creashing if we crash
                 logger.info('Starting hyperparamter tuning...')
                 searcher.fit(X_train, y_train)
                 

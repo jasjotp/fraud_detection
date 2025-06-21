@@ -324,7 +324,7 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 1G
+          memory: 3.5G
     networks:
       - fraud-detection
 
