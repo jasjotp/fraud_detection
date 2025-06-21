@@ -56,16 +56,21 @@ def flag_home_location_mismatches(df):
 
 # helper function to compute the rolling count of features 
 def compute_rolling_unique_count(df, group_col: str, target_col: str, time_window: str, new_col_name: str) -> pd.Series:
+    df = df.copy()
+
+    # convert a target column to numeric using .cat 
+    df['_encoded'] = df[target_col].astype('category').cat.codes
+
     tmp = (
         df.set_index('timestamp')
-        .groupby(group_col)[target_col]
+        .groupby(group_col)['_encoded']
         .rolling(time_window, closed = 'left')
         .apply(lambda x: x.nunique(), raw = False)
         .reset_index()
-        .rename(columns = {target_col: new_col_name})
+        .rename(columns = {'_encoded': new_col_name})
     )
 
-    return df.merge(tmp, on = [group_col, 'timestamp'], how = 'left')
+    return df.merge(tmp, on = [group_col, 'timestamp'], how = 'left').drop(columns = ['_encoded'])
 
 # class that is used for the model training 
 class FraudDetectionTraining:
@@ -340,8 +345,8 @@ class FraudDetectionTraining:
         num_distinct_merchants_24h = (
             df.set_index('timestamp')
             .groupby('user_id')['merchant']
-            .rolling('24h', closed = 'left')
-            .apply(lambda x: x.nunique(), raw = False)
+            .resample('24h')
+            .nunique()
             .reset_index()
             .rename(columns = {'merchant': 'num_distinct_merchants_24h'})
         )
@@ -372,15 +377,29 @@ class FraudDetectionTraining:
 
         # IP address and device based anomalies 
         # extract the device count per user for the last 24h and 7 days 
-        df['device_count_24h'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'device_id', time_window = '24h', new_col_name = 'device_count_24h')
-        df['device_count_7d'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'device_id', time_window = '7d', new_col_name = 'device_count_7d')
+        df = compute_rolling_unique_count(
+            df, group_col = 'user_id', target_col = 'device_id',
+            time_window = '24h', new_col_name = 'device_count_24h'
+        )        
+
+        df = compute_rolling_unique_count(
+            df, group_col = 'user_id', target_col = 'device_id',
+            time_window = '7d', new_col_name = 'device_count_7d'
+        )  
 
         # create a new device flag, is the device is a new device compared to historical devices for that user, flag it as 1 
         df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'device_id', new_flag_col = 'new_device_flag')
 
         # extract the ip address count per user for the last 24h and the last 7 days: high count could mean compromised
-        df['ip_count_24h'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'ip_address', time_window = '24h', new_col_name = 'ip_count_24h')
-        df['ip_count_7d'] = compute_rolling_unique_count(df, group_col = 'user_id', target_col = 'ip_address', time_window = '7d', new_col_name = 'ip_count_7d')
+        df = compute_rolling_unique_count(
+            df, group_col = 'user_id', target_col = 'ip_address',
+            time_window = '24h', new_col_name = 'ip_count_24h'
+        )  
+
+        df = compute_rolling_unique_count(
+            df, group_col = 'user_id', target_col = 'ip_address',
+            time_window = '7d', new_col_name = 'ip_count_7d'
+        )  
 
         # create a new IP address flag, if the transaction has a new IP address compared to historical IP addresses for that user, flag it as 1 
         df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'ip_address', new_flag_col = 'new_ip_flag')
