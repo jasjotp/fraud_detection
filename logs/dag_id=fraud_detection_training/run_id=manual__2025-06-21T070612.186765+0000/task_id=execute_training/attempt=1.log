@@ -1,0 +1,304 @@
+[2025-06-21T07:06:19.173+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-06-21T07:06:19.224+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-21T07:06:12.186765+00:00 [queued]>
+[2025-06-21T07:06:19.248+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-21T07:06:12.186765+00:00 [queued]>
+[2025-06-21T07:06:19.250+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-06-21T07:06:19.284+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-06-21 07:06:12.186765+00:00
+[2025-06-21T07:06:19.297+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=111) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-21T07:06:19.301+0000] {standard_task_runner.py:72} INFO - Started process 112 to run task
+[2025-06-21T07:06:19.300+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'manual__2025-06-21T07:06:12.186765+00:00', '--job-id', '123', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmpuoh0y1zv']
+[2025-06-21T07:06:19.303+0000] {standard_task_runner.py:105} INFO - Job 123: Subtask execute_training
+[2025-06-21T07:06:19.408+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training manual__2025-06-21T07:06:12.186765+00:00 [running]> on host 2deba5046d1b
+[2025-06-21T07:06:19.678+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-06-21T07:06:12.186765+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-21T07:06:12.186765+00:00'
+[2025-06-21T07:06:19.681+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-06-21T07:06:19.759+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-06-21T07:06:33.499+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-06-21T07:06:33.609+0000] {fraud_detection_training.py:103} INFO - Configuration loaded successfully
+[2025-06-21T07:06:35.039+0000] {fraud_detection_training.py:134} INFO - Minio connection verified. Buckets: ['mlflow']
+[2025-06-21T07:06:40.532+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-06-21T07:06:40.533+0000] {fraud_detection_training.py:450} INFO - Starting model training process...
+[2025-06-21T07:06:40.534+0000] {fraud_detection_training.py:150} INFO - Connecting to Kafka Topic: transactions
+[2025-06-21T07:06:40.661+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-21T07:06:40.741+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:41.099+0000] {conn.py:618} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <checking_api_versions_recv> [IPv4 ('15.157.158.196', 9092)]>: Broker version identified as 2.6
+[2025-06-21T07:06:41.346+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:41.348+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-21T07:06:41.351+0000] {consumer.py:120} WARNING - group_id is None: disabling auto-commit.
+[2025-06-21T07:06:41.352+0000] {subscription_state.py:181} INFO - Updating subscribed topics to: ('transactions',)
+[2025-06-21T07:06:41.427+0000] {subscription_state.py:254} INFO - Updated partition assignment: [('transactions', 0), ('transactions', 1), ('transactions', 2), ('transactions', 3), ('transactions', 4), ('transactions', 5)]
+[2025-06-21T07:06:41.499+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-21T07:06:41.583+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-21T07:06:41.673+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-21T07:06:41.741+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-21T07:06:41.809+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-21T07:06:41.859+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-21T07:06:41.863+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:41.944+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:42.003+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:42.081+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:42.191+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:42.278+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-21T07:06:42.709+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:42.712+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-21T07:06:42.721+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-21T07:06:42.929+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:42.931+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-21T07:06:43.125+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:43.128+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-21T07:06:43.313+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:43.315+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-21T07:06:43.489+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:43.491+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-21T07:06:43.492+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 1) to offset 0.
+[2025-06-21T07:06:43.668+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-21T07:06:43.670+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-21T07:06:43.671+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 3) to offset 0.
+[2025-06-21T07:06:43.672+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 5) to offset 0.
+[2025-06-21T07:06:43.675+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 2) to offset 0.
+[2025-06-21T07:06:43.679+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 0) to offset 0.
+[2025-06-21T07:06:43.767+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 4) to offset 0.
+[2025-06-21T07:08:57.553+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-21T07:08:57.555+0000] {fetcher.py:784} INFO - Fetch to node 1 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-06-21T07:08:57.555+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-21T07:08:57.556+0000] {fetcher.py:784} INFO - Fetch to node 2 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-06-21T07:08:57.556+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-06-21T07:08:57.557+0000] {fetcher.py:784} INFO - Fetch to node 3 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-06-21T07:08:57.558+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-21T07:08:57.558+0000] {fetcher.py:784} INFO - Fetch to node 5 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-06-21T07:08:57.559+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-06-21T07:08:57.559+0000] {fetcher.py:784} INFO - Fetch to node 6 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-06-21T07:08:57.560+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-21T07:08:57.561+0000] {fetcher.py:784} INFO - Fetch to node 7 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-06-21T07:09:00.134+0000] {fraud_detection_training.py:188} ERROR - Failed to read data from Kafka: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 174, in read_from_kafka
+    df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 1112, in to_datetime
+    values = convert_listlike(arg._values, format)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 488, in _convert_listlike_datetimes
+    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 519, in _array_strptime_with_fallback
+    result, timezones = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "strptime.pyx", line 534, in pandas._libs.tslibs.strptime.array_strptime
+  File "strptime.pyx", line 355, in pandas._libs.tslibs.strptime.array_strptime
+ValueError: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+[2025-06-21T07:09:00.140+0000] {fraud_detection_training.py:642} ERROR - Training failed: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 453, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 174, in read_from_kafka
+    df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 1112, in to_datetime
+    values = convert_listlike(arg._values, format)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 488, in _convert_listlike_datetimes
+    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 519, in _array_strptime_with_fallback
+    result, timezones = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "strptime.pyx", line 534, in pandas._libs.tslibs.strptime.array_strptime
+  File "strptime.pyx", line 355, in pandas._libs.tslibs.strptime.array_strptime
+ValueError: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+[2025-06-21T07:09:00.143+0000] {fraud_detection_training_dag.py:37} ERROR - Training failed: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 453, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 174, in read_from_kafka
+    df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 1112, in to_datetime
+    values = convert_listlike(arg._values, format)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 488, in _convert_listlike_datetimes
+    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 519, in _array_strptime_with_fallback
+    result, timezones = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "strptime.pyx", line 534, in pandas._libs.tslibs.strptime.array_strptime
+  File "strptime.pyx", line 355, in pandas._libs.tslibs.strptime.array_strptime
+ValueError: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+[2025-06-21T07:09:00.156+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 453, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 174, in read_from_kafka
+    df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 1112, in to_datetime
+    values = convert_listlike(arg._values, format)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 488, in _convert_listlike_datetimes
+    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 519, in _array_strptime_with_fallback
+    result, timezones = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "strptime.pyx", line 534, in pandas._libs.tslibs.strptime.array_strptime
+  File "strptime.pyx", line 355, in pandas._libs.tslibs.strptime.array_strptime
+ValueError: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+[2025-06-21T07:09:00.167+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=fraud_detection_training, task_id=execute_training, run_id=manual__2025-06-21T07:06:12.186765+00:00, execution_date=20250621T070612, start_date=20250621T070619, end_date=20250621T070900
+[2025-06-21T07:09:00.197+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-06-21T07:09:00.198+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 123 for task execute_training (Model training failed: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.; 112)
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 453, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 174, in read_from_kafka
+    df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 1112, in to_datetime
+    values = convert_listlike(arg._values, format)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 488, in _convert_listlike_datetimes
+    return _array_strptime_with_fallback(arg, name, utc, format, exact, errors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/tools/datetimes.py", line 519, in _array_strptime_with_fallback
+    result, timezones = array_strptime(arg, fmt, exact=exact, errors=errors, utc=utc)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "strptime.pyx", line 534, in pandas._libs.tslibs.strptime.array_strptime
+  File "strptime.pyx", line 355, in pandas._libs.tslibs.strptime.array_strptime
+ValueError: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: time data "2025-06-21T05:48:02+00:00" doesn't match format "%Y-%m-%dT%H:%M:%S.%f%z", at position 245961. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+[2025-06-21T07:09:00.446+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2025-06-21T07:09:00.465+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-06-21T07:09:00.468+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

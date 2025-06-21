@@ -171,7 +171,7 @@ class FraudDetectionTraining:
             if df.empty:
                 raise ValueError('No message received from Kafka.')
 
-            df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
+            df['timestamp'] = pd.to_datetime(df['timestamp'], format = 'ISO8601', utc = True)
             
             # is the is_fraud label is missing, we are missing the label of the data, so raise an error
             if 'is_fraud' not in df.columns:
@@ -472,7 +472,6 @@ class FraudDetectionTraining:
                                                                 stratify = y,
                                                                 random_state = self.config['model'].get('seed', 42)
             )
-            X_train = X_train.astype(np.float32)
             
             # start our MLFLow login 
             with mlflow.start_run():
