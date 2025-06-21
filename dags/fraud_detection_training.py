@@ -266,6 +266,8 @@ class FraudDetectionTraining:
             .reset_index(level = 0, drop = True)
         )
 
+        df['user_avg_transaction_interval'] = df['user_avg_transaction_interval'].fillna(df['user_avg_transaction_interval'].median())
+
         # calculate the zscore amount per user to catch outliers based on each user's transaction history 
         # calcualte each user's rolling mean and std to date using expanding()
         df['zscore_amount_per_user'] = (
@@ -297,6 +299,7 @@ class FraudDetectionTraining:
 
         # merge the average amount spent by each user in the last 7 days correctly
         df = df.merge(amount_7d_avg, on = ['user_id', 'timestamp'], how = 'left')
+        df['amount_7d_avg'].fillna(df['amount_7d_avg'].median(), inplace = True)
 
         # extract the current transaction amount compared to the average transaction amount for the last 7 days for the user as a ratio 
         df['amount_to_avg_ratio_7d'] = df['amount'] / df['amount_7d_avg']
@@ -306,6 +309,7 @@ class FraudDetectionTraining:
         df['amount_vs_median'] = df.groupby('user_id')['amount'].transform(
             lambda x: (x - x.rolling(window = 5, min_periods = 1).median()).abs()
         )
+        df['amount_vs_median'] = df['amount_vs_median'].fillna(df['amount_vs_median'].median())
 
         # total historical spend per user (cumulative) to date (excluding current date)
         df['user_total_spend_todate'] = df.groupby('user_id')['amount'].cumsum().shift().fillna(0)
@@ -322,6 +326,7 @@ class FraudDetectionTraining:
 
         # merge the average amount spent by each user in the last 24 hours correctly back to main df
         df = df.merge(amount_spent_last24h, on = ['user_id', 'timestamp'], how = 'left')
+        df['amount_spent_last24h'] = df['amount_spent_last24h'].fillna(0)
 
         # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
         df['user_spending_ratio_last24h'] = (
@@ -329,7 +334,8 @@ class FraudDetectionTraining:
         ).fillna(0)
 
         # find the current amount's ratio compared to the previous ratio, as big jumps in amount can signal unusual behaviour
-        df['prev_amount'] = df.groupby('user_id')['amount'].shift()
+        df['prev_amount'] = df.groupby('user_id')['amount'].shift().fillna(0)
+
         df['amount_change_ratio'] = (
             (df['amount'] - df['prev_amount']) / df['prev_amount'].replace(0, np.nan)
         ).fillna(0)
@@ -353,6 +359,7 @@ class FraudDetectionTraining:
         
         # merge the number of merchants for each user in the last 24 hours correctly back to main df
         df = df.merge(num_distinct_merchants_24h, on = ['user_id', 'timestamp'], how = 'left')
+        df['num_distinct_merchants_24h'] = df['num_distinct_merchants_24h'].fillna(0)
 
         df = df.reset_index() # bring timestamp back as a column
 
@@ -364,7 +371,8 @@ class FraudDetectionTraining:
             .shift()
             .reset_index(level = 0, drop = True)
         )
-
+        df['merchant_avg_fraud_rate'] = df['merchant_avg_fraud_rate'].fillna(df['merchant_avg_fraud_rate'].mean())
+        
         # location based anomoalies 
         df['prev_location'] = df.groupby('user_id')['location'].shift()
         df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
@@ -380,29 +388,35 @@ class FraudDetectionTraining:
         df = compute_rolling_unique_count(
             df, group_col = 'user_id', target_col = 'device_id',
             time_window = '24h', new_col_name = 'device_count_24h'
-        )        
+        )
+        df['device_count_24h'] = df['device_count_24h'].fillna(0)
 
         df = compute_rolling_unique_count(
             df, group_col = 'user_id', target_col = 'device_id',
             time_window = '7d', new_col_name = 'device_count_7d'
         )  
+        df['device_count_7d'] = df['device_count_7d'].fillna(0)
 
         # create a new device flag, is the device is a new device compared to historical devices for that user, flag it as 1 
         df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'device_id', new_flag_col = 'new_device_flag')
+        df['new_device_flag'] = df['new_device_flag'].fillna(0)
 
         # extract the ip address count per user for the last 24h and the last 7 days: high count could mean compromised
         df = compute_rolling_unique_count(
             df, group_col = 'user_id', target_col = 'ip_address',
             time_window = '24h', new_col_name = 'ip_count_24h'
         )  
+        df['ip_count_24h'] = df['ip_count_24h'].fillna(0)
 
         df = compute_rolling_unique_count(
             df, group_col = 'user_id', target_col = 'ip_address',
             time_window = '7d', new_col_name = 'ip_count_7d'
         )  
+        df['ip_count_7d'] = df['ip_count_7d'].fillna(0)
 
         # create a new IP address flag, if the transaction has a new IP address compared to historical IP addresses for that user, flag it as 1 
         df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'ip_address', new_flag_col = 'new_ip_flag')
+        df['new_ip_flag'] = df['new_ip_flag'].fillna(0)
 
         # extract the feature columns we want to use 
         feature_cols = [
@@ -419,7 +433,14 @@ class FraudDetectionTraining:
 
         if 'is_fraud' not in df.columns:
             raise ValueError('Missing target column: "is_fraud"')
+        
+        # log any NaNs if there are any for inspection 
+        nan_counts = df[feature_cols].isnull().sum()
 
+        if nan_counts.any():
+            logger.warning(f'Still found NaNs in these columns: {nan_counts[nan_counts > 0].to_dict()} - Filling them with 0')
+            df[feature_cols] = df[feature_cols].fillna(0) # if there are any NaNs left, fill them with 0 after logging
+            
         return df[feature_cols + ['is_fraud']]
 
     # create a function to train the model
