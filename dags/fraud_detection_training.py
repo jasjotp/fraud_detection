@@ -520,7 +520,7 @@ class FraudDetectionTraining:
                 })
 
                 # categorical feature preprocessing
-                categorical_features = ['merchant', 'currency', 'location']
+                categorical_features = ['merchant', 'location']
                 df[categorical_features] = df[categorical_features].astype(str)
 
                 preprocessor = ColumnTransformer(
