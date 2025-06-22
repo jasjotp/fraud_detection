@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from confluent_kafka import Producer
 import logging 
 import random
@@ -87,7 +88,7 @@ class TransactionProducer():
             raise e 
         
         # handle the compromised users/merchants, that we know are risky
-        self.compromised_users = set(random.sample(range(1000, 9999), 50)) # set 0.5% of users to be comprimised users (0.5% so the model does not predict comprimised users too often)
+        self.compromised_users = set(random.sample(range(1000, 9999), 90)) # set 1% of users to be comprimised users (1% so the model does not predict comprimised users too often)
         self.high_risk_merchants = ['QuickCash', 'GlobalDigital', 'FastMoneyX']
         self.country_list = [
             'US',  # United States
@@ -195,7 +196,7 @@ class TransactionProducer():
         transaction = {
             'transaction_id': fake.uuid4(),
             'user_id': user_id,
-            'amount': round(fake.pyfloat(min_value = 0.01, max_value = 10000), 2),
+            'amount': round(np.random.exponential(scale = 2000), 2),
             'currency': 'USD',
             'merchant': fake.company(),
             'timestamp': (datetime.now(timezone.utc) + timedelta(seconds = random.randint(-300, 3000))).isoformat(), # use UTC time so we know there is no discrepancy between transactions that happen in different timezones
@@ -204,9 +205,8 @@ class TransactionProducer():
             'note': ''
         }
 
-        is_fraud = 0 
+        fraud_signals = []
         amount = transaction['amount']
-        user_id = transaction['user_id']
         merchant = transaction['merchant']
         device_info = self.get_device_info(user_id)
         transaction.update(device_info)
@@ -214,53 +214,50 @@ class TransactionProducer():
         # apply patterns to generate the fradulent transaction and make sure the transaction is set to fraudulent (is_fraud = 1)
 
         # simulate velocity checks: if many transactions happen in a short time span 
-        if not is_fraud:
-            self.apply_velocity_check(transaction)
-            is_fraud = transaction['is_fraud']
+        self.apply_velocity_check(transaction)
+        if transaction['is_fraud']:
+            fraud_signals.append('Velocity anomaly detected')
 
         # account takeover
-        if user_id in self.compromised_users and amount > 500: 
-            if random.random() < 0.3:  # 30% chance of fraud in compromized accounts
-                is_fraud = 1 
-                transaction['amount'] = random.uniform(500, 5000)
-                transaction['merchant'] = random.choice(self.high_risk_merchants)
-                transaction['note'] = 'Account Takeover anomaly detected'
+        if user_id in self.compromised_users and amount > 500 and random.random() < 0.3: # 30% chance of fraud in compromized accounts
+            transaction['amount'] = random.uniform(7000, 15000)
+            transaction['merchant'] = random.choice(self.high_risk_merchants)
+            fraud_signals.append("Account Takeover anomaly detected")
 
-        # card testing 
-        if not is_fraud and amount < 2.0:
-            # simulate rapid small transactions 
-            if user_id % 1000 == 0 and random.random() < 0.25:
-                is_fraud = 1 
-                transaction['amount'] = round(random.uniform(0.01, 2), 2)
-                transaction['location'] = 'US'
-                transaction['note'] = 'Card Testing anomaly detected'
+        # card testing to simulate rapid small transactions 
+        if amount < 2.0 and user_id % 1000 == 0 and random.random() < 0.25:
+            transaction['amount'] = round(random.uniform(0.01, 1.99), 2)
+            transaction['location'] = 'US'
+            fraud_signals.append("Card Testing anomaly detected")
 
         # merchant collusion 
-        if not is_fraud and merchant in self.high_risk_merchants:
-            if amount > 3000 and random.random() < 0.15:
-                is_fraud = 1 
-                transaction['amount'] = round(random.uniform(300, 1500), 2)
-                transaction['note'] = 'Merchant Collusion anomaly detected'
+        # reassign merchant in case it was changed by earlier fraud logic
+        merchant = transaction['merchant']
+        if merchant in self.high_risk_merchants and amount > 2000 and random.random() < 0.15:
+            transaction['amount'] = round(random.uniform(3000, 5000), 2)
+            fraud_signals.append("Merchant Collusion anomaly detected")
           
         # geographic anomalies 
-        if not is_fraud and transaction['location'] != self.user_home_country_map[user_id]:
-            is_fraud = 1 
-            transaction['note'] = 'Geo anomaly detected'
+        if transaction['location'] != self.user_home_country_map[user_id]:
+            fraud_signals.append("Geo anomaly detected")
 
         # flag new device anomalies 
-        if not is_fraud and device_info['new_device_flag'] == 1:
-            is_fraud = 1 
-            transaction['note'] = 'New device anomaly detected'
+        if device_info['new_device_flag'] == 1:
+            fraud_signals.append("New device anomaly detected")
 
-        # eshtablish the baseline for random fraud (~0.1 - 0.3%)
-        if not is_fraud and random.random() < 0.002:
-            is_fraud = 1 
+        # establish the baseline for random fraud (~0.1 - 0.3%)
+        if random.random() < 0.002:
             transaction['amount'] = random.uniform(100, 2000)
+            fraud_signals.append("Random fraud (noise)")
 
         # ensure that the final fraud rate is between 1-2% 
-        if not is_fraud and random.random() < 0.015:
-            is_fraud = 1
-        transaction['is_fraud'] = is_fraud
+        if not fraud_signals and random.random() < 0.015:
+            fraud_signals.append("Fallback fraud to balance dataset")
+
+        # add the fraud signals to the note column in transaction is there are any fradulent transactions and set it_fraud to 1
+        if fraud_signals:
+            transaction['is_fraud'] = 1 
+            transaction['note'] = '; '.join(fraud_signals)
 
         # validate the modified transaction 
         if self.validate_transaction(transaction):

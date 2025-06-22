@@ -529,7 +529,7 @@ class FraudDetectionTraining:
                 searcher = RandomizedSearchCV(
                     pipeline, 
                     param_dist,
-                    n_iter = 15,
+                    n_iter = 5,
                     scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
                     cv = StratifiedKFold(n_splits = 3, shuffle = True),
                     n_jobs = 1,
@@ -538,13 +538,30 @@ class FraudDetectionTraining:
                     random_state = self.config['model'].get('seed', 42)
                 )
 
-                # conduct hyperparameter tuning by outputting a confusion matrix to see how the model is performing 
+                # log current memory usage to help debug potential out-of-memory issues
                 logger.info(f'Memory usage before training (MB): {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2:.2f}') # to see if out of memory errors are a reason for creashing if we crash
                 logger.info('Starting hyperparamter tuning...')
+                
+                # train the model with different hyperparameter combinations
                 searcher.fit(X_train, y_train)
                 
                 # find the best model in the pipeline 
                 best_model = searcher.best_estimator_
+
+                # find the importances of each feature
+                importances = best_model.named_steps['classifier'].feature_importances_
+                feature_names = best_model.named_steps['preprocessor'].get_feature_names_out()
+
+                feature_importances_df = pd.DataFrame({
+                    'feature': feature_names,
+                    'importance': importances
+                }).sort_values(by = 'importance', ascending = False)
+
+                # save the feature importances to a csv and log to MLFlow 
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                feature_importances_path = f'feature_importances_{timestamp}.csv'
+                feature_importances_df.to_csv(feature_importances_path, index = False)
+                mlflow.log_artifact(feature_importances_path)
 
                 # find best hyperparameters
                 best_params = searcher.best_params_
@@ -605,7 +622,6 @@ class FraudDetectionTraining:
                         # TP, FP, TN, FP
                         plt.text(j, i, format(cm[i, j], 'd'), ha = 'center', va = 'center', color = 'red')
                 plt.tight_layout()
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 cm_filename = f'confusion_matrix_{timestamp}.png'
                 plt.savefig(cm_filename)
                 mlflow.log_artifact(cm_filename) # log confusion matrix to MLFlow
