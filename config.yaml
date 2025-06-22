@@ -12,7 +12,7 @@ kafka:
   password: "YjrlsQeZmoaPCLIvyyoE0dMohu8OulNMOz3rxgDG/LvVlYCUlKohmLceshBl0SjH"
   topic: "transactions"
   output_topic: "fraud_predictions"
-
+  timeout: 600000
 
 # features: 
 

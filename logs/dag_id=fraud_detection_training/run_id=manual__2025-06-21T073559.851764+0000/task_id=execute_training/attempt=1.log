@@ -75,3 +75,27 @@
 [2025-06-21T07:45:00.528+0000] {fraud_detection_training.py:442} WARNING - Still found NaNs in these columns: {'time_diff': 9000} - Filling them with 0
 [2025-06-21T07:45:04.764+0000] {fraud_detection_training.py:541} INFO - Memory usage before training (MB): 2095.54
 [2025-06-21T07:45:04.765+0000] {fraud_detection_training.py:542} INFO - Starting hyperparamter tuning...
+[2025-06-21T16:07:50.825+0000] {job.py:229} INFO - Heartbeat recovered after 28916.04 seconds
+[2025-06-21T17:30:36.511+0000] {job.py:229} INFO - Heartbeat recovered after 4966.32 seconds
+[2025-06-21T17:40:05.446+0000] {fraud_detection_training.py:550} INFO - Best hyperparameters: {'classifier__subsample': 0.6, 'classifier__reg_alpha': 0, 'classifier__max_depth': 7, 'classifier__learning_rate': 0.01, 'classifier__gamma': 0.1, 'classifier__colsample_bytree': 0.8}
+[2025-06-21T17:40:10.331+0000] {fraud_detection_training.py:564} INFO - Optimal threhsold determined: 0.3054
+[2025-06-21T17:40:22.705+0000] {fraud_detection_training.py:587} INFO - Logged metrics: {'auc_pr': 0.24755208638775084, 'precision': 0.4292049414000634, 'recall': 0.17029031041849943, 'f1': 0.24383660248335431, 'threshold': 0.30543699860572815} and Best Parmaters: {'classifier__subsample': 0.6, 'classifier__reg_alpha': 0, 'classifier__max_depth': 7, 'classifier__learning_rate': 0.01, 'classifier__gamma': 0.1, 'classifier__colsample_bytree': 0.8} in MLFlow
+[2025-06-21T17:40:23.993+0000] {credentials.py:1147} INFO - Found credentials in environment variables.
+[2025-06-21T17:40:24.266+0000] {fraud_detection_training.py:612} INFO - Logged Confusion Matrix: confusion_matrix_20250621_174023.png in MLFlow
+[2025-06-21T17:40:25.361+0000] {fraud_detection_training.py:625} INFO - Logged Precision-Recall Curve: precision_recall_curve_20250621_174023.png in MLFlow
+[2025-06-21T17:40:48.268+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/mlflow/types/utils.py:452: UserWarning: Hint: Inferred schema contains integer column(s). Integer columns in Python cannot represent missing values. If your input data contains missing values at inference time, it will be encoded as floats and will cause a schema enforcement error. The best way to avoid this problem is to infer the model schema based on a realistic data sample (training dataset) that includes missing values. Alternatively, you can declare integer columns as doubles (float64) whenever these columns may have missing values. See `Handling Integers With Missing Values <https://www.mlflow.org/docs/latest/models.html#handling-integers-with-missing-values>`_ for more details.
+  warnings.warn(
+
+[2025-06-21T17:40:48.365+0000] {logging_mixin.py:190} WARNING - 2025/06/21 17:40:48 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+[2025-06-21T17:41:05.639+0000] {logging_mixin.py:190} WARNING - Registered model 'fraud_detection_model' already exists. Creating a new version of this model...
+[2025-06-21T17:41:06.534+0000] {logging_mixin.py:190} WARNING - 2025/06/21 17:41:06 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: fraud_detection_model, version 3
+[2025-06-21T17:41:06.535+0000] {logging_mixin.py:190} WARNING - Created version '3' of model 'fraud_detection_model'.
+[2025-06-21T17:41:06.688+0000] {fraud_detection_training.py:636} INFO - Training successfully completed with metrics: {'auc_pr': 0.24755208638775084, 'precision': 0.4292049414000634, 'recall': 0.17029031041849943, 'f1': 0.24383660248335431, 'threshold': 0.30543699860572815}
+[2025-06-21T17:41:06.766+0000] {logging_mixin.py:190} INFO - 🏃 View run capricious-moose-382 at: http://mlflow-server:5500/#/experiments/1/runs/5e406059e38845f18b70ac6ad1118475
+[2025-06-21T17:41:06.768+0000] {logging_mixin.py:190} INFO - 🧪 View experiment at: http://mlflow-server:5500/#/experiments/1
+[2025-06-21T17:41:09.542+0000] {python.py:240} INFO - Done. Returned value was: {'status': 'success', 'precision': {'auc_pr': 0.24755208638775084, 'precision': 0.4292049414000634, 'recall': 0.17029031041849943, 'f1': 0.24383660248335431, 'threshold': 0.30543699860572815}}
+[2025-06-21T17:41:09.747+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-06-21T17:41:09.750+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=fraud_detection_training, task_id=execute_training, run_id=manual__2025-06-21T07:35:59.851764+00:00, execution_date=20250621T073559, start_date=20250621T073602, end_date=20250621T174109
+[2025-06-21T17:41:10.064+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2025-06-21T17:41:10.293+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-06-21T17:41:10.297+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

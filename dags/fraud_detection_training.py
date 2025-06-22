@@ -159,7 +159,7 @@ class FraudDetectionTraining:
                 sasl_plain_password = self.config['kafka']['password'],
                 value_deserializer = lambda x: json.loads(x.decode('utf-8')),
                 auto_offset_reset = 'earliest',
-                consumer_timeout_ms = self.config['kafka'].get('timeout', 10000)
+                consumer_timeout_ms = self.config['kafka'].get('timeout', 600000)
             )
 
             # read in the message from the consumer 
@@ -170,6 +170,7 @@ class FraudDetectionTraining:
 
             if df.empty:
                 raise ValueError('No message received from Kafka.')
+            logger.info(f"Total messages read from Kafka: {len(df)}")
 
             df['timestamp'] = pd.to_datetime(df['timestamp'], format = 'ISO8601', utc = True)
             
