@@ -57,6 +57,7 @@ class TransactionProducer():
         self.topic = os.getenv('KAFKA_TOPIC', 'transactions')
         self.running = False
         self.user_transaction_history = defaultdict(list) # track past transaction times for velocity check
+        self.user_small_transaction_times = defaultdict(list) # tracks small value transactions for a user for card testing logic
         self.user_devices = defaultdict(lambda: random.sample([fake.uuid4() for _ in range(5)], random.randint(1, 3)))
         self.user_ips = defaultdict(lambda: random.sample([fake.ipv4_public() for _ in range(5)], random.randint(1, 3)))
 
@@ -151,6 +152,26 @@ class TransactionProducer():
             transaction['is_fraud'] = 1 
             transaction['note'] = 'High Transaction Velocity anomaly detected'
     
+    # function that checks is a card is being tested (3 small transactions happen under 60 seconds for the same user)
+    def apply_card_testing_check(self, transaction):
+        user_id = transaction['user_id']
+        transaction_time = datetime.fromisoformat(transaction['timestamp'])
+
+        if transaction['amount'] < 2.00:
+            self.user_small_transaction_times[user_id].append(transaction_time)
+
+            # keep only the transactions in the past 60 seconds 
+            window_start = transaction_time - timedelta(seconds = 60)
+            recent_small_transactions = [t for t in self.user_small_transaction_times[user_id] if t > window_start]
+
+            # add the most recent transactions in the last 60 seconds for each user
+            self.user_small_transaction_times[user_id] = recent_small_transactions
+
+            # if there are 3 or more transactions in the last 60 seconds, set is_fraud = 1 
+            if len(recent_small_transactions) >= 3:
+                transaction['is_fraud'] = 1 
+                transaction['note'] = 'Card Testing (burst) anomaly detected'
+
     # function to get the transactions location for an anomaly 
     def get_transaction_location(self, user_id: int, anomaly_chance: float = 0.01) -> str:
         home_country = self.user_home_country_map[user_id]
@@ -218,17 +239,16 @@ class TransactionProducer():
         if transaction['is_fraud']:
             fraud_signals.append('Velocity anomaly detected')
 
+        # card testing to simulate rapid small transactions 
+        self.apply_card_testing_check(transaction)
+        if transaction['is_fraud'] and 'Card Testing (burst) anomaly detected' in transaction['note']:
+            fraud_signals.append('Card Testing (burst) anomaly detected')
+
         # account takeover
         if user_id in self.compromised_users and amount > 500 and random.random() < 0.3: # 30% chance of fraud in compromized accounts
             transaction['amount'] = random.uniform(7000, 15000)
             transaction['merchant'] = random.choice(self.high_risk_merchants)
             fraud_signals.append("Account Takeover anomaly detected")
-
-        # card testing to simulate rapid small transactions 
-        if amount < 2.0 and user_id % 1000 == 0 and random.random() < 0.25:
-            transaction['amount'] = round(random.uniform(0.01, 1.99), 2)
-            transaction['location'] = 'US'
-            fraud_signals.append("Card Testing anomaly detected")
 
         # merchant collusion 
         # reassign merchant in case it was changed by earlier fraud logic
@@ -240,6 +260,7 @@ class TransactionProducer():
         # geographic anomalies 
         if transaction['location'] != self.user_home_country_map[user_id]:
             fraud_signals.append("Geo anomaly detected")
+            transaction['new_device_flag'] = 1  # assume new device is used when in unexpected location
 
         # flag new device anomalies 
         if device_info['new_device_flag'] == 1:
@@ -249,15 +270,19 @@ class TransactionProducer():
         if random.random() < 0.002:
             transaction['amount'] = random.uniform(100, 2000)
             fraud_signals.append("Random fraud (noise)")
-
-        # ensure that the final fraud rate is between 1-2% 
-        if not fraud_signals and random.random() < 0.015:
-            fraud_signals.append("Fallback fraud to balance dataset")
-
+            
         # add the fraud signals to the note column in transaction is there are any fradulent transactions and set it_fraud to 1
         if fraud_signals:
             transaction['is_fraud'] = 1 
             transaction['note'] = '; '.join(fraud_signals)
+        
+        # if there are not any fraud signals in the transaction, ensure non-fraud transactions are pretty consistently realistic and similar so the model can learn patterns better
+        if not fraud_signals:
+            transaction['amount'] = round(np.random.exponential(scale=2000), 2)
+            transaction['location'] = self.user_home_country_map[user_id]
+            transaction['device_id'] = random.choice(self.user_devices[user_id])
+            transaction['ip_address'] = random.choice(self.user_ips[user_id])
+            transaction['new_device_flag'] = 0
 
         # validate the modified transaction 
         if self.validate_transaction(transaction):

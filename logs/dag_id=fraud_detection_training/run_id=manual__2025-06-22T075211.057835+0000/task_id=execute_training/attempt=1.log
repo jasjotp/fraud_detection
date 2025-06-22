@@ -1,0 +1,404 @@
+[2025-06-22T07:52:18.088+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-06-22T07:52:18.141+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-22T07:52:11.057835+00:00 [queued]>
+[2025-06-22T07:52:18.159+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-22T07:52:11.057835+00:00 [queued]>
+[2025-06-22T07:52:18.161+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-06-22T07:52:18.194+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-06-22 07:52:11.057835+00:00
+[2025-06-22T07:52:18.214+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=342) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-22T07:52:18.225+0000] {standard_task_runner.py:72} INFO - Started process 343 to run task
+[2025-06-22T07:52:18.227+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'manual__2025-06-22T07:52:11.057835+00:00', '--job-id', '164', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmpndcsr6dl']
+[2025-06-22T07:52:18.228+0000] {standard_task_runner.py:105} INFO - Job 164: Subtask execute_training
+[2025-06-22T07:52:18.385+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training manual__2025-06-22T07:52:11.057835+00:00 [running]> on host 2f250710534d
+[2025-06-22T07:52:18.580+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-06-22T07:52:11.057835+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-22T07:52:11.057835+00:00'
+[2025-06-22T07:52:18.582+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-06-22T07:52:18.675+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-06-22T07:52:30.494+0000] {font_manager.py:1639} INFO - generated new fontManager
+[2025-06-22T07:52:31.014+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-06-22T07:52:31.036+0000] {fraud_detection_training.py:103} INFO - Configuration loaded successfully
+[2025-06-22T07:52:32.124+0000] {fraud_detection_training.py:134} INFO - Minio connection verified. Buckets: ['mlflow']
+[2025-06-22T07:52:32.614+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-06-22T07:52:32.615+0000] {fraud_detection_training.py:451} INFO - Starting model training process...
+[2025-06-22T07:52:32.616+0000] {fraud_detection_training.py:150} INFO - Connecting to Kafka Topic: transactions
+[2025-06-22T07:52:32.691+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-22T07:52:32.816+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:33.124+0000] {conn.py:618} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <checking_api_versions_recv> [IPv4 ('35.182.170.137', 9092)]>: Broker version identified as 2.6
+[2025-06-22T07:52:33.370+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:33.371+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-22T07:52:33.373+0000] {consumer.py:120} WARNING - group_id is None: disabling auto-commit.
+[2025-06-22T07:52:33.374+0000] {subscription_state.py:181} INFO - Updating subscribed topics to: ('transactions',)
+[2025-06-22T07:52:33.447+0000] {subscription_state.py:254} INFO - Updated partition assignment: [('transactions', 0), ('transactions', 1), ('transactions', 2), ('transactions', 3), ('transactions', 4), ('transactions', 5)]
+[2025-06-22T07:52:33.503+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-22T07:52:33.552+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-22T07:52:33.602+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-22T07:52:33.639+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-22T07:52:33.676+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-22T07:52:33.720+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-22T07:52:33.722+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:33.763+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:33.805+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:33.853+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:33.911+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:33.956+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-22T07:52:34.253+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:34.272+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-22T07:52:34.273+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-22T07:52:34.453+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:34.455+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-22T07:52:34.628+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:34.630+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-22T07:52:34.701+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:34.703+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-22T07:52:34.877+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:34.880+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-22T07:52:34.881+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 1) to offset 0.
+[2025-06-22T07:52:35.061+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-22T07:52:35.063+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-22T07:52:35.064+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 5) to offset 0.
+[2025-06-22T07:52:35.069+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 3) to offset 0.
+[2025-06-22T07:52:35.070+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 2) to offset 0.
+[2025-06-22T07:52:35.071+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 0) to offset 0.
+[2025-06-22T07:52:35.176+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 4) to offset 0.
+[2025-06-22T07:56:48.391+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: Socket EVENT_READ without in-flight-requests
+[2025-06-22T07:57:55.959+0000] {client_async.py:388} WARNING - Node 3 connection failed -- refreshing metadata
+[2025-06-22T07:57:56.698+0000] {conn.py:1516} WARNING - DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:56.701+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:56.712+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:56.714+0000] {client_async.py:388} WARNING - Node 3 connection failed -- refreshing metadata
+[2025-06-22T07:57:56.770+0000] {conn.py:1163} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: socket disconnected
+[2025-06-22T07:57:56.777+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: socket disconnected
+[2025-06-22T07:57:56.794+0000] {client_async.py:388} WARNING - Node 7 connection failed -- refreshing metadata
+[2025-06-22T07:57:56.809+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: Socket EVENT_READ without in-flight-requests
+[2025-06-22T07:57:56.827+0000] {client_async.py:388} WARNING - Node 1 connection failed -- refreshing metadata
+[2025-06-22T07:57:56.844+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: Socket EVENT_READ without in-flight-requests
+[2025-06-22T07:57:56.860+0000] {client_async.py:388} WARNING - Node 5 connection failed -- refreshing metadata
+[2025-06-22T07:57:56.888+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: Socket EVENT_READ without in-flight-requests
+[2025-06-22T07:57:56.893+0000] {client_async.py:388} WARNING - Node 6 connection failed -- refreshing metadata
+[2025-06-22T07:57:56.925+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: Socket EVENT_READ without in-flight-requests
+[2025-06-22T07:57:56.931+0000] {client_async.py:388} WARNING - Node 2 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.057+0000] {conn.py:1516} WARNING - DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.078+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.084+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.098+0000] {client_async.py:388} WARNING - Node 1 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.180+0000] {conn.py:1516} WARNING - DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.190+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.224+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.239+0000] {client_async.py:388} WARNING - Node 2 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.358+0000] {conn.py:1516} WARNING - DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.360+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.376+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.382+0000] {client_async.py:388} WARNING - Node 3 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.488+0000] {conn.py:1516} WARNING - DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.490+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.497+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.516+0000] {client_async.py:388} WARNING - Node 6 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.579+0000] {conn.py:1516} WARNING - DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.581+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.582+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.597+0000] {client_async.py:388} WARNING - Node 5 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.644+0000] {job.py:229} INFO - Heartbeat recovered after 71.72 seconds
+[2025-06-22T07:57:57.694+0000] {conn.py:1516} WARNING - DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.695+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.696+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.698+0000] {client_async.py:388} WARNING - Node 7 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.769+0000] {conn.py:1516} WARNING - DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.785+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.815+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.819+0000] {client_async.py:388} WARNING - Node 2 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.896+0000] {conn.py:1516} WARNING - DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.899+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.908+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.911+0000] {client_async.py:388} WARNING - Node 1 connection failed -- refreshing metadata
+[2025-06-22T07:57:57.990+0000] {conn.py:1516} WARNING - DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:57.991+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:57.992+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:57.993+0000] {client_async.py:388} WARNING - Node 3 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.054+0000] {conn.py:1516} WARNING - DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.056+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.058+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.069+0000] {client_async.py:388} WARNING - Node 6 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.133+0000] {conn.py:1516} WARNING - DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.136+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.137+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.138+0000] {client_async.py:388} WARNING - Node 5 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.186+0000] {conn.py:1516} WARNING - DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.194+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.202+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.205+0000] {client_async.py:388} WARNING - Node 7 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.248+0000] {conn.py:1516} WARNING - DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.249+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.251+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.253+0000] {client_async.py:388} WARNING - Node 8 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.296+0000] {conn.py:1516} WARNING - DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.300+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.310+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.312+0000] {client_async.py:388} WARNING - Node 1 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.343+0000] {conn.py:1516} WARNING - DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.344+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.345+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.346+0000] {client_async.py:388} WARNING - Node 2 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.397+0000] {conn.py:1516} WARNING - DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.402+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.412+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.415+0000] {client_async.py:388} WARNING - Node 6 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.493+0000] {conn.py:1516} WARNING - DNS lookup failed for b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.506+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=0 host=b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.507+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=0 host=b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.508+0000] {client_async.py:388} WARNING - Node 0 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.548+0000] {conn.py:1516} WARNING - DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.549+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.552+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.553+0000] {client_async.py:388} WARNING - Node 3 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.604+0000] {conn.py:1516} WARNING - DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.607+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.610+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.612+0000] {client_async.py:388} WARNING - Node 7 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.660+0000] {conn.py:1516} WARNING - DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.662+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.668+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.670+0000] {client_async.py:388} WARNING - Node 5 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.706+0000] {conn.py:1516} WARNING - DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.713+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.714+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.715+0000] {client_async.py:388} WARNING - Node 8 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.796+0000] {conn.py:1516} WARNING - DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.817+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.832+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.835+0000] {client_async.py:388} WARNING - Node 1 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.890+0000] {conn.py:1516} WARNING - DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.900+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.901+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.902+0000] {client_async.py:388} WARNING - Node 8 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.935+0000] {conn.py:1516} WARNING - DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.936+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.937+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.947+0000] {client_async.py:388} WARNING - Node 2 connection failed -- refreshing metadata
+[2025-06-22T07:57:58.982+0000] {conn.py:1516} WARNING - DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:58.983+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: DNS lookup failed for b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:58.985+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:58.986+0000] {client_async.py:388} WARNING - Node 7 connection failed -- refreshing metadata
+[2025-06-22T07:57:59.036+0000] {conn.py:1516} WARNING - DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:59.045+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:59.051+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:59.053+0000] {client_async.py:388} WARNING - Node 6 connection failed -- refreshing metadata
+[2025-06-22T07:57:59.089+0000] {conn.py:1516} WARNING - DNS lookup failed for b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:59.091+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=0 host=b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:59.092+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=0 host=b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:59.103+0000] {client_async.py:388} WARNING - Node 0 connection failed -- refreshing metadata
+[2025-06-22T07:57:59.140+0000] {conn.py:1516} WARNING - DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:59.150+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: DNS lookup failed for b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:59.152+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:59.154+0000] {client_async.py:388} WARNING - Node 5 connection failed -- refreshing metadata
+[2025-06-22T07:57:59.199+0000] {conn.py:1516} WARNING - DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:59.201+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:59.202+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:59.203+0000] {client_async.py:388} WARNING - Node 8 connection failed -- refreshing metadata
+[2025-06-22T07:57:59.296+0000] {conn.py:1516} WARNING - DNS lookup failed for b9-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:59.301+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=9 host=b9-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b9-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:59.308+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=9 host=b9-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:59.310+0000] {client_async.py:388} WARNING - Node 9 connection failed -- refreshing metadata
+[2025-06-22T07:57:59.430+0000] {conn.py:1516} WARNING - DNS lookup failed for b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T07:57:59.444+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=0 host=b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T07:57:59.460+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=0 host=b0-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T07:57:59.462+0000] {client_async.py:388} WARNING - Node 0 connection failed -- refreshing metadata
+[2025-06-22T13:40:50.758+0000] {conn.py:1516} WARNING - DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -3] Temporary failure in name resolution. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T13:40:50.764+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: DNS lookup failed for b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T13:40:50.779+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T13:40:50.786+0000] {client_async.py:388} WARNING - Node 3 connection failed -- refreshing metadata
+[2025-06-22T13:40:50.939+0000] {conn.py:1516} WARNING - DNS lookup failed for b10-pkc-ld537.ca-central-1.aws.confluent.cloud:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-06-22T13:40:51.011+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=10 host=b10-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: DNS lookup failed for b10-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 (0)
+[2025-06-22T13:40:51.058+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.11, node_id=10 host=b10-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-06-22T13:40:51.086+0000] {client_async.py:388} WARNING - Node 10 connection failed -- refreshing metadata
+[2025-06-22T13:40:52.751+0000] {job.py:229} INFO - Heartbeat recovered after 20575.14 seconds
+[2025-06-22T13:40:54.981+0000] {fraud_detection_training.py:173} INFO - Total messages read from Kafka: 214535
+[2025-06-22T13:40:56.736+0000] {fraud_detection_training.py:184} INFO - Kafka data read successfully with fraud rate: 6.31
+[2025-06-22T17:28:35.268+0000] {job.py:229} INFO - Heartbeat recovered after 13647.16 seconds
+[2025-06-22T17:29:16.274+0000] {local_task_job_runner.py:346} WARNING - State of this instance has been externally set to failed. Terminating instance.
+[2025-06-22T17:29:16.276+0000] {local_task_job_runner.py:245} INFO - ::endgroup::
+[2025-06-22T17:29:16.286+0000] {process_utils.py:132} INFO - Sending 15 to group 343. PIDs of all processes in the group: [343]
+[2025-06-22T17:29:16.288+0000] {process_utils.py:87} INFO - Sending the signal 15 to group 343
+[2025-06-22T17:29:16.289+0000] {taskinstance.py:3094} ERROR - Received SIGTERM. Terminating subprocesses.
+[2025-06-22T17:29:16.369+0000] {taskinstance.py:3095} ERROR - Stacktrace: 
+  File "/home/***/.local/bin/***", line 8, in <module>
+    sys.exit(main())
+  File "/home/***/.local/lib/python3.12/site-packages/***/__main__.py", line 62, in main
+    args.func(args)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/providers/celery/cli/celery_command.py", line 64, in wrapper
+    providers_configuration_loaded(func)(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/providers_configuration_loader.py", line 55, in wrapped_function
+    return func(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/providers/celery/cli/celery_command.py", line 237, in worker
+    _run_command_with_daemon_option(
+  File "/home/***/.local/lib/python3.12/site-packages/***/providers/celery/cli/celery_command.py", line 50, in _run_command_with_daemon_option
+    run_command_with_daemon_option(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/daemon_utils.py", line 86, in run_command_with_daemon_option
+    callback()
+  File "/home/***/.local/lib/python3.12/site-packages/***/providers/celery/cli/celery_command.py", line 230, in run_celery_worker
+    celery_app.worker_main(options)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/app/base.py", line 391, in worker_main
+    self.start(argv=argv)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/app/base.py", line 371, in start
+    celery.main(args=argv, standalone_mode=False)
+  File "/home/***/.local/lib/python3.12/site-packages/click/core.py", line 1082, in main
+    rv = self.invoke(ctx)
+  File "/home/***/.local/lib/python3.12/site-packages/click/core.py", line 1697, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/home/***/.local/lib/python3.12/site-packages/click/core.py", line 1443, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/home/***/.local/lib/python3.12/site-packages/click/core.py", line 788, in invoke
+    return __callback(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/click/decorators.py", line 33, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/bin/base.py", line 135, in caller
+    return f(ctx, *args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/bin/worker.py", line 356, in worker
+    worker.start()
+  File "/home/***/.local/lib/python3.12/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+  File "/home/***/.local/lib/python3.12/site-packages/celery/concurrency/base.py", line 130, in start
+    self.on_start()
+  File "/home/***/.local/lib/python3.12/site-packages/celery/concurrency/prefork.py", line 109, in on_start
+    P = self._pool = Pool(processes=self.limit,
+  File "/home/***/.local/lib/python3.12/site-packages/celery/concurrency/asynpool.py", line 464, in __init__
+    super().__init__(processes, *args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/pool.py", line 1046, in __init__
+    self._create_worker_process(i)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/concurrency/asynpool.py", line 482, in _create_worker_process
+    return super()._create_worker_process(i)
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/pool.py", line 1158, in _create_worker_process
+    w.start()
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/process.py", line 120, in start
+    self._popen = self._Popen(self)
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/context.py", line 331, in _Popen
+    return Popen(process_obj)
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/popen_fork.py", line 22, in __init__
+    self._launch(process_obj)
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/popen_fork.py", line 77, in _launch
+    code = process_obj._bootstrap()
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/process.py", line 323, in _bootstrap
+    self.run()
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/process.py", line 110, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+  File "/home/***/.local/lib/python3.12/site-packages/billiard/pool.py", line 362, in workloop
+    result = (True, prepare_result(fun(*args, **kwargs)))
+  File "/home/***/.local/lib/python3.12/site-packages/celery/app/trace.py", line 651, in fast_trace_task
+    R, I, T, Rstr = tasks[task].__trace__(
+  File "/home/***/.local/lib/python3.12/site-packages/celery/app/trace.py", line 453, in trace_task
+    R = retval = fun(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/celery/app/trace.py", line 736, in __protected_call__
+    return self.run(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/providers/celery/executors/celery_executor_utils.py", line 139, in execute_command
+    _execute_in_fork(command_to_exec, celery_task_id)
+  File "/home/***/.local/lib/python3.12/site-packages/***/providers/celery/executors/celery_executor_utils.py", line 171, in _execute_in_fork
+    args.func(args)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/task_command.py", line 254, in _run_task_by_selected_method
+    return _run_task_by_local_task_job(args, ti)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/task_command.py", line 322, in _run_task_by_local_task_job
+    ret = run_job(job=job_runner.job, execute_callable=job_runner._execute)
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/jobs/job.py", line 421, in run_job
+    return execute_job(job, execute_callable=execute_callable)
+  File "/home/***/.local/lib/python3.12/site-packages/***/jobs/job.py", line 450, in execute_job
+    ret = execute_callable()
+  File "/home/***/.local/lib/python3.12/site-packages/***/jobs/local_task_job_runner.py", line 171, in _execute
+    self.task_runner.start()
+  File "/home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py", line 55, in start
+    self.process = self._start_by_fork()
+  File "/home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+  File "/home/***/.local/lib/python3.12/site-packages/***/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+  File "/home/***/.local/lib/python3.12/site-packages/***/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/***/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+  File "/opt/***/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+  File "/opt/***/dags/fraud_detection_training.py", line 457, in train_model
+    data = self.create_features(df)
+  File "/opt/***/dags/fraud_detection_training.py", line 357, in create_features
+    .nunique()
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/resample.py", line 1491, in nunique
+    return self._downsample("nunique")
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/resample.py", line 1631, in _apply
+    result = self._groupby.apply(func)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/groupby/generic.py", line 228, in apply
+    return super().apply(func, *args, **kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/groupby/groupby.py", line 1770, in apply
+    result = self._python_apply_general(f, self._selected_obj)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/groupby/groupby.py", line 1819, in _python_apply_general
+    values, mutated = self.grouper.apply_groupwise(f, data, self.axis)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/groupby/ops.py", line 911, in apply_groupwise
+    res = f(group)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/resample.py", line 1627, in func
+    return getattr(x, f)(**kwargs)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/resample.py", line 1491, in nunique
+    return self._downsample("nunique")
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/resample.py", line 1705, in _downsample
+    obj = self._obj_with_exclusions
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/resample.py", line 201, in __getattr__
+    if attr in self.obj:
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/generic.py", line 2013, in __contains__
+    return key in self._info_axis
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/indexes/datetimelike.py", line 170, in __contains__
+    self.get_loc(key)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/indexes/datetimes.py", line 604, in get_loc
+    parsed, reso = self._parse_with_reso(key)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/indexes/datetimes.py", line 560, in _parse_with_reso
+    parsed, reso = super()._parse_with_reso(label)
+  File "/home/***/.local/lib/python3.12/site-packages/pandas/core/indexes/datetimelike.py", line 270, in _parse_with_reso
+    parsed, reso_str = parsing.parse_datetime_string_with_reso(label, freqstr)
+  File "/usr/local/lib/python3.12/_strptime.py", line 653, in _strptime_datetime
+    tt, fraction, gmtoff_fraction = _strptime(data_string, format)
+  File "/usr/local/lib/python3.12/_strptime.py", line 413, in _strptime
+    format_regex = _regex_cache.get(format)
+  File "/home/***/.local/lib/python3.12/site-packages/***/models/taskinstance.py", line 3095, in signal_handler
+    self.log.error("Stacktrace: \n%s", "".join(traceback.format_stack()))
+
+[2025-06-22T17:29:16.659+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-06-22T17:29:16.744+0000] {process_utils.py:80} INFO - Process psutil.Process(pid=343, status='terminated', exitcode=0, started='07:52:17') (343) terminated with exit code 0

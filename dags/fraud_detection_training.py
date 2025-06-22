@@ -16,8 +16,10 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTETomek
 from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve, confusion_matrix, f1_score
 from xgboost import XGBClassifier
+
 from math import sin, cos, pi
 import matplotlib.pyplot as plt
 
@@ -280,7 +282,39 @@ class FraudDetectionTraining:
             .fillna(0)
         )
 
+        # create a feature for burst detection: < $2 transactions in the last minute
+        small_txn_count = (
+            df[df['amount'] < 2.0]
+            .set_index('timestamp')
+            .groupby('user_id')['amount']
+            .rolling('1min', closed = 'left')
+            .count()
+            .reset_index()
+            .rename(columns = {'amount': 'burst_small_txn_count_last_min'})
+        )
+        df = df.merge(small_txn_count, on = ['user_id', 'timestamp'], how = 'left')
+        df['burst_small_txn_count_last_min'].fillna(0, inplace = True)
+
+        # count of all transactions for each user in the last 5 minutes
+        txn_count_5min = (
+            df.set_index('timestamp')
+            .groupby('user_id')['transaction_id']
+            .rolling('5min', closed = 'left')
+            .count()
+            .reset_index()
+            .rename(columns = {'transaction_id': 'txn_count_last_5min'})
+        )
+        df = df.merge(txn_count_5min, on = ['user_id', 'timestamp'], how = 'left')
+        df['txn_count_last_5min'].fillna(0, inplace = True)
+
         # extract monetary features
+        # extract the rolling standard deviation for each user for their last 10 tramsactions
+        df['user_transaction_amount_std'] = (
+            df.groupby('user_id')['amount']
+            .transform(lambda x: x.rolling(window = 10, min_periods = 2).std())
+        )
+        df['user_transaction_amount_std'].fillna(df['user_transaction_amount_std'].median(), inplace = True)
+
         # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
         df['amount_to_avg_ratio'] = (
             df.groupby('user_id')['amount']
@@ -420,17 +454,19 @@ class FraudDetectionTraining:
         df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'ip_address', new_flag_col = 'new_ip_flag')
         df['new_ip_flag'] = df['new_ip_flag'].fillna(0)
 
+        # combined anomaly flag: to see if the transaction has a new deivce id and a new ip address flag 
+        df['new_device_and_new_ip_flag'] = ((df['new_device_flag'] == 1) & (df['new_ip_flag'] == 1)).astype(int)
+
         # extract the feature columns we want to use 
         feature_cols = [
             'amount', 'transaction_hour', 'transaction_hour_sin', 'transaction_hour_cos',
-            'is_night', 'is_weekend','transaction_day', 'transaction_dayOfWeek',
             'user_transactions_per_minute','is_high_velocity', 'is_unusual_hour_for_user', 
-            'user_activity_24h', 'time_diff', 'user_avg_transaction_interval', 'zscore_amount_per_user',
-            'amount_to_avg_ratio', 'amount_7d_avg', 'amount_to_avg_ratio_7d', 'amount_vs_median', 'user_total_spend_todate',
-            'amount_spent_last24h', 'user_spending_ratio_last24h', 'prev_amount', 'amount_change_ratio',
-            'merchant_risk', 'user_merchant_transaction_count','num_distinct_merchants_24h', 'merchant_avg_fraud_rate', 
+            'user_activity_24h', 'time_diff', 'user_avg_transaction_interval', 'zscore_amount_per_user', 'user_transaction_amount_std',
+            'burst_small_txn_count_last_min', 'txn_count_last_5min', 'amount_to_avg_ratio', 'amount_7d_avg', 'amount_to_avg_ratio_7d', 
+            'amount_vs_median', 'user_total_spend_todate', 'amount_spent_last24h', 'user_spending_ratio_last24h', 'prev_amount', 'amount_change_ratio',
+            'merchant_risk', 'user_merchant_transaction_count', 'merchant_avg_fraud_rate', 
             'is_location_anomalous', 'device_count_24h', 'device_count_7d', 'new_device_flag',
-            'ip_count_24h', 'ip_count_7d', 'new_ip_flag', 'merchant', 'currency', 'location'
+            'ip_count_24h', 'ip_count_7d', 'new_ip_flag', 'new_device_and_new_ip_flag', 'merchant', 'location'
         ]
 
         if 'is_fraud' not in df.columns:
@@ -511,7 +547,7 @@ class FraudDetectionTraining:
                 # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalanced dataset)
                 pipeline = ImbPipeline([
                     ('preprocessor', preprocessor),
-                    ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
+                    ('smote', SMOTETomek(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
                     ('classifier', xgb) # XGBoost classififer for prediction
                 ], memory = './cache') # put the pipeline in cache so computation is faster
 
@@ -529,7 +565,7 @@ class FraudDetectionTraining:
                 searcher = RandomizedSearchCV(
                     pipeline, 
                     param_dist,
-                    n_iter = 5,
+                    n_iter = 10,
                     scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
                     cv = StratifiedKFold(n_splits = 3, shuffle = True),
                     n_jobs = 1,
