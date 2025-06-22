@@ -565,7 +565,7 @@ class FraudDetectionTraining:
                 searcher = RandomizedSearchCV(
                     pipeline, 
                     param_dist,
-                    n_iter = 10,
+                    n_iter = 25,
                     scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
                     cv = StratifiedKFold(n_splits = 3, shuffle = True),
                     n_jobs = 1,
