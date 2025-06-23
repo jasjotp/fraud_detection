@@ -173,7 +173,7 @@ class TransactionProducer():
                 transaction['note'] = 'Card Testing (burst) anomaly detected'
 
     # function to get the transactions location for an anomaly 
-    def get_transaction_location(self, user_id: int, anomaly_chance: float = 0.01) -> str:
+    def get_transaction_location(self, user_id: int, anomaly_chance: float = 0.005) -> str:
         home_country = self.user_home_country_map[user_id]
 
         if random.random() < anomaly_chance:
@@ -182,7 +182,7 @@ class TransactionProducer():
         return home_country
 
     # function to simulate unseen device and IP address 
-    def get_device_info(self, user_id: int, anomaly_chance: float = 0.01) -> Dict[str, Any]:
+    def get_device_info(self, user_id: int, anomaly_chance: float = 0.005) -> Dict[str, Any]:
         if random.random() < anomaly_chance:
             # simulate a new device/IP address 
             return {
@@ -272,7 +272,7 @@ class TransactionProducer():
             fraud_signals.append("Random fraud (noise)")
             
         # add the fraud signals to the note column in transaction is there are any fradulent transactions and set it_fraud to 1
-        if fraud_signals:
+        if fraud_signals and random.random() < 0.01:
             transaction['is_fraud'] = 1 
             transaction['note'] = '; '.join(fraud_signals)
         

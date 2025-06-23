@@ -459,14 +459,11 @@ class FraudDetectionTraining:
 
         # extract the feature columns we want to use 
         feature_cols = [
-            'amount', 'transaction_hour', 'transaction_hour_sin', 'transaction_hour_cos',
-            'user_transactions_per_minute','is_high_velocity', 'is_unusual_hour_for_user', 
-            'user_activity_24h', 'time_diff', 'user_avg_transaction_interval', 'zscore_amount_per_user', 'user_transaction_amount_std',
-            'burst_small_txn_count_last_min', 'txn_count_last_5min', 'amount_to_avg_ratio', 'amount_7d_avg', 'amount_to_avg_ratio_7d', 
-            'amount_vs_median', 'user_total_spend_todate', 'amount_spent_last24h', 'user_spending_ratio_last24h', 'prev_amount', 'amount_change_ratio',
-            'merchant_risk', 'user_merchant_transaction_count', 'merchant_avg_fraud_rate', 
-            'is_location_anomalous', 'device_count_24h', 'device_count_7d', 'new_device_flag',
-            'ip_count_24h', 'ip_count_7d', 'new_ip_flag', 'new_device_and_new_ip_flag', 'merchant', 'location'
+            'amount', 'is_night', 'is_weekend', 'transaction_day', 'user_activity_24h', 'amount_to_avg_ratio',
+            'merchant_risk', 'merchant', 'is_location_anomalous', 'new_device_flag', 'user_transactions_per_minute',
+            'transaction_hour', 'transaction_hour_sin', 'transaction_hour_cos', 'new_ip_flag', 'new_device_and_new_ip_flag',
+            'device_count_7d', 'device_count_24h', 'ip_count_7d', 'ip_count_24h', 'txn_count_last_5min', 'merchant_avg_fraud_rate',
+            'user_total_spend_todate', 'location', 'amount_vs_median', 'amount_spent_last24h', 'user_merchant_transaction_count'
         ]
 
         if 'is_fraud' not in df.columns:
@@ -539,6 +536,7 @@ class FraudDetectionTraining:
                     eval_metric = 'aucpr', # area under precision recall curve as we have unbalanced data
                     random_state = self.config['model'].get('seed', 42),
                     reg_lambda = 1.0, # prevents overfitting
+                    scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum(),
                     n_estimators = self.config['model']['params']['n_estimators'],
                     n_jobs = -1,
                     tree_method = self.config['model'].get('tree_method', 'hist')
@@ -547,7 +545,7 @@ class FraudDetectionTraining:
                 # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalanced dataset)
                 pipeline = ImbPipeline([
                     ('preprocessor', preprocessor),
-                    ('smote', SMOTETomek(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
+                    ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
                     ('classifier', xgb) # XGBoost classififer for prediction
                 ], memory = './cache') # put the pipeline in cache so computation is faster
 
@@ -565,7 +563,7 @@ class FraudDetectionTraining:
                 searcher = RandomizedSearchCV(
                     pipeline, 
                     param_dist,
-                    n_iter = 25,
+                    n_iter = 20,
                     scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
                     cv = StratifiedKFold(n_splits = 3, shuffle = True),
                     n_jobs = 1,
@@ -667,7 +665,6 @@ class FraudDetectionTraining:
                 # plot the precision and recall curve
                 plt.figure(figsize = (10, 6))
                 plt.plot(recall_arr, precision_arr, marker = '.', label = 'Precision-Recall Curve')
-                plt.xlabel('Recall')
                 plt.ylabel('Precision')
                 plt.title('Precision-Recall Curve')
                 plt.legend()
