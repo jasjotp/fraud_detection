@@ -6,21 +6,18 @@ import mlflow
 import pandas as pd
 import numpy as np
 import json
-import psutil
-from dotenv import load_dotenv
-from datetime import datetime
-from mlflow.models.signature import infer_signature
+import optuna
+from optuna.integration import SklearnPruningCallback
 from kafka import KafkaConsumer
+from mlflow.models.signature import infer_signature
+from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, StratifiedKFold
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
 from imblearn.over_sampling import SMOTE
-from imblearn.combine import SMOTETomek
 from sklearn.metrics import fbeta_score, make_scorer, precision_score, recall_score, average_precision_score, precision_recall_curve, confusion_matrix, f1_score
 from xgboost import XGBClassifier
-
-from math import sin, cos, pi
 import matplotlib.pyplot as plt
 
 logging.basicConfig(
@@ -33,47 +30,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-# helper function to flag if a value is new for a user compared to their previous ones, for location, device_id, and ip_address
-def flag_new_values_vectorized(df, group_col: str, value_col: str, new_flag_col: str) -> pd.DataFrame:
-    def mark_new(series):
-        seen = set()
-
-        # if x hasn’t been seen, mark as 1 and add to seen, otherwise mark as 0
-        return series.apply(lambda x: 1 if x not in seen and not seen.add(x) else 0)
-    
-    df[new_flag_col] = df.groupby(group_col)[value_col].transform(mark_new)
-    return df
-
-# helper function to flag if the transaction's location is different from user's most common location (home location)
-def flag_home_location_mismatches(df):
-    # get the most common location, using the mode, per user 
-    home_locations = df.groupby('user_id')['location'].agg(lambda x: x.mode()[0])
-
-    # map each home location to each row 
-    df['home_location'] = df['user_id'].map(home_locations)
-
-    # flag if transaction location != home location 
-    df['is_location_mismatch'] = (df['location'] != df['home_location']).astype(int)
-    return df 
-
-# helper function to compute the rolling count of features 
-def compute_rolling_unique_count(df, group_col: str, target_col: str, time_window: str, new_col_name: str) -> pd.Series:
-    df = df.copy()
-
-    # convert a target column to numeric using .cat 
-    df['_encoded'] = df[target_col].astype('category').cat.codes
-
-    tmp = (
-        df.set_index('timestamp')
-        .groupby(group_col)['_encoded']
-        .rolling(time_window, closed = 'left')
-        .apply(lambda x: x.nunique(), raw = False)
-        .reset_index()
-        .rename(columns = {'_encoded': new_col_name})
-    )
-
-    return df.merge(tmp, on = [group_col, 'timestamp'], how = 'left').drop(columns = ['_encoded'])
 
 # class that is used for the model training 
 class FraudDetectionTraining:
@@ -138,7 +94,7 @@ class FraudDetectionTraining:
             # get the mlflow bucket, if there is none, default to a bucket called mlflow
             mlflow_bucket = self.config['mlflow'].get('bucket', 'mlflow')
 
-            # if the bucket does not exist, create the bucket in S3
+            # if the bucket does not exist, create the bucket in S3W
             if mlflow_bucket not in bucket_names:
                 s3.create_bucket(Bucket = mlflow_bucket)
                 logger.info('Created missing MLFlow bucket: %s', mlflow_bucket)
@@ -161,7 +117,7 @@ class FraudDetectionTraining:
                 sasl_plain_password = self.config['kafka']['password'],
                 value_deserializer = lambda x: json.loads(x.decode('utf-8')),
                 auto_offset_reset = 'earliest',
-                consumer_timeout_ms = self.config['kafka'].get('timeout', 600000)
+                consumer_timeout_ms = self.config['kafka'].get('timeout', 10000)
             )
 
             # read in the message from the consumer 
@@ -172,9 +128,8 @@ class FraudDetectionTraining:
 
             if df.empty:
                 raise ValueError('No message received from Kafka.')
-            logger.info(f"Total messages read from Kafka: {len(df)}")
 
-            df['timestamp'] = pd.to_datetime(df['timestamp'], format = 'ISO8601', utc = True)
+            df['timestamp'] = pd.to_datetime(df['timestamp'], utc = True)
             
             # is the is_fraud label is missing, we are missing the label of the data, so raise an error
             if 'is_fraud' not in df.columns:
@@ -199,10 +154,6 @@ class FraudDetectionTraining:
         # extract temporal features 
         # hour of transaction 
         df['transaction_hour'] = df['timestamp'].dt.hour
-        
-        # extract the sine and cosine of the transaction hour so that the model can learn cyclic nature like hour 23 and 0 actually being close to each other
-        df['transaction_hour_sin'] = np.sin(2 * pi * df['transaction_hour'] / 24)
-        df['transaction_hour_cos'] = np.cos(2 * pi * df['transaction_hour'] / 24)
 
         # flag transactions happening at night (between 10PM and 5AM)
         df['is_night'] = ((df['transaction_hour'] >= 22) | df['transaction_hour'] < 5).astype(int)
@@ -212,269 +163,32 @@ class FraudDetectionTraining:
 
         # flag transaction day 
         df['transaction_day'] = df['timestamp'].dt.day
-
-        # flag transaction day of week 
-        df['transaction_dayOfWeek'] = df['timestamp'].dt.dayofweek
-
-        # flag high velocity transactions (5 or more in the same minute per user)
-        df['minute'] = df['timestamp'].dt.floor('min')
-
-        # count transactions per user per minute 
-        df['user_transactions_per_minute'] = df.groupby(['user_id', 'minute'])['timestamp'].transform('count')
-
-        # flag is transaction count in that minute is 5 or more 
-        df['is_high_velocity'] = (df['user_transactions_per_minute'] >= 5).astype(int)
-
-        # extract a feature to find the number of days it has been since the user transacted 
-        df['days_since_last_transaction'] = (df['timestamp'] - df.groupby('user_id')['timestamp'].shift()).dt.total_seconds() / 86400
-        df['days_since_last_transaction'].fillna(df['days_since_last_transaction'].median(), inplace=True)
-
-        # flag if transactions happen at an hour that is rare for the user 
-        # build a user-hour frequency profile 
-        user_hour_profile = (
-            df.groupby(['user_id', 'transaction_hour'])
-            .size()
-            .groupby('user_id')
-            .apply(lambda x: x / x.sum())
-            .droplevel(0) # drops the outer user_id index level
-        )
-        
-        # find the hours where the user rarely transacts at (less than 5% of the time)
-        rare_hours = user_hour_profile[user_hour_profile < 0.05].rename('hour_fraction').reset_index()
-        rare_hours['is_rare_hour'] = 1
-
-        # merge the rare hours back into the original df 
-        df = df.merge(rare_hours[['user_id', 'transaction_hour', 'is_rare_hour']], on = ['user_id', 'transaction_hour'], how = 'left')
-        df['is_unusual_hour_for_user'] = df['is_rare_hour'].fillna(0).astype(int)
-        df.drop(columns = ['is_rare_hour'], inplace = True)
-
+ 
         # extract behavioural features 
         # get user activity in last 24 hours: a rolling transaction group on the timestamp, to get each users amount/transaction count in the last 24 hours 
-        df['user_activity_24h'] = (
-            df.groupby('user_id', group_keys = False)
-            .apply(lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount']
-            .count()
-            .fillna(0))
-            .reset_index(level = 0, drop = True)
+        df['user_activity_24h'] = df.groupby('user_id', group_keys = False).apply(
+            lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
         )
-
-        # find the average time between past transactions per user
-        df['time_diff'] = df.groupby('user_id')['timestamp'].diff().dt.total_seconds()
-
-        # find the rolling average transaction interval for that user for each transaction (find each users average time between past transactions)
-        df['user_avg_transaction_interval'] = (
-            df.groupby('user_id')['time_diff']
-            .expanding()
-            .mean()
-            .shift()
-            .reset_index(level = 0, drop = True)
-        )
-
-        df['user_avg_transaction_interval'] = df['user_avg_transaction_interval'].fillna(df['user_avg_transaction_interval'].median())
-
-        # calculate the zscore amount per user to catch outliers based on each user's transaction history 
-        # calcualte each user's rolling mean and std to date using expanding()
-        df['zscore_amount_per_user'] = (
-            df.groupby('user_id')['amount']
-            .apply(lambda x: (x - x.expanding().mean().shift()) / x.expanding().std().shift())
-            .reset_index(level = 0, drop = True)
-            .replace([np.inf, -np.inf], 0)
-            .fillna(0)
-        )
-
-        # create a feature for burst detection: < $2 transactions in the last minute
-        small_txn_count = (
-            df[df['amount'] < 2.0]
-            .set_index('timestamp')
-            .groupby('user_id')['amount']
-            .rolling('1min', closed = 'left')
-            .count()
-            .reset_index()
-            .rename(columns = {'amount': 'burst_small_txn_count_last_min'})
-        )
-        df = df.merge(small_txn_count, on = ['user_id', 'timestamp'], how = 'left')
-        df['burst_small_txn_count_last_min'].fillna(0, inplace = True)
-
-        # count of all transactions for each user in the last 5 minutes
-        txn_count_5min = (
-            df.set_index('timestamp')
-            .groupby('user_id')['transaction_id']
-            .rolling('5min', closed = 'left')
-            .count()
-            .reset_index()
-            .rename(columns = {'transaction_id': 'txn_count_last_5min'})
-        )
-        df = df.merge(txn_count_5min, on = ['user_id', 'timestamp'], how = 'left')
-        df['txn_count_last_5min'].fillna(0, inplace = True)
-
+        
         # extract monetary features
-        # extract the rolling standard deviation for each user for their last 10 tramsactions
-        df['user_transaction_amount_std'] = (
-            df.groupby('user_id')['amount']
-            .transform(lambda x: x.rolling(window = 10, min_periods = 2).std())
+        # extract the last transaction amount, as compared to the avererage amount of the last 7 days
+        df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
+            lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
         )
-        df['user_transaction_amount_std'].fillna(df['user_transaction_amount_std'].median(), inplace = True)
-
-        # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
-        df['amount_to_avg_ratio'] = (
-            df.groupby('user_id')['amount']
-            .apply(lambda g: g / g.rolling(7, min_periods = 1).mean())
-            .reset_index(level = 0, drop = True)
-            .fillna(1.0)
-        )
-
-        # extract the average amount spent by each user in the last 7 days 
-        amount_7d_avg = (
-            df.set_index('timestamp')
-                .groupby('user_id')['amount']
-                .rolling('7d', min_periods = 1)
-                .mean()
-                .reset_index()
-                .rename(columns = {'amount': 'amount_7d_avg'})
-        )
-
-        # merge the average amount spent by each user in the last 7 days correctly
-        df = df.merge(amount_7d_avg, on = ['user_id', 'timestamp'], how = 'left')
-        df['amount_7d_avg'].fillna(df['amount_7d_avg'].median(), inplace = True)
-
-        # extract the current transaction amount compared to the average transaction amount for the last 7 days for the user as a ratio 
-        df['amount_to_avg_ratio_7d'] = df['amount'] / df['amount_7d_avg']
-        df['amount_to_avg_ratio_7d'] = df['amount_to_avg_ratio_7d'].fillna(1.0)
-
-        # extract the current amount compared to the rolling median of the past 5 transactions for the user
-        df['amount_vs_median'] = df.groupby('user_id')['amount'].transform(
-            lambda x: (x - x.rolling(window = 5, min_periods = 1).median()).abs()
-        )
-        df['amount_vs_median'] = df['amount_vs_median'].fillna(df['amount_vs_median'].median())
-
-        # total historical spend per user (cumulative) to date (excluding current date)
-        df['user_total_spend_todate'] = df.groupby('user_id')['amount'].cumsum().shift().fillna(0)
-
-        # calculate the amount spent for each user in the last 24h, excluding the current transaction
-        amount_spent_last24h = (
-            df.set_index('timestamp')
-                .groupby('user_id')['amount']
-                .rolling('24h', closed = 'left')
-                .sum()
-                .reset_index()
-                .rename(columns = {'amount': 'amount_spent_last24h'})
-        )
-
-        # merge the average amount spent by each user in the last 24 hours correctly back to main df
-        df = df.merge(amount_spent_last24h, on = ['user_id', 'timestamp'], how = 'left')
-        df['amount_spent_last24h'] = df['amount_spent_last24h'].fillna(0)
-
-        # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
-        df['user_spending_ratio_last24h'] = (
-            df['amount_spent_last24h'] / df['user_total_spend_todate'].replace(0, np.nan)
-        ).fillna(0)
-
-        # find the current amount's ratio compared to the previous ratio, as big jumps in amount can signal unusual behaviour
-        df['prev_amount'] = df.groupby('user_id')['amount'].shift().fillna(0)
-
-        df['amount_change_ratio'] = (
-            (df['amount'] - df['prev_amount']) / df['prev_amount'].replace(0, np.nan)
-        ).fillna(0)
 
         # merchant features 
         high_risk_merchants = self.config.get('high_risk_merchants', ['QuickCash', 'GlobalDigital', 'FastMoneyX'])
         df['merchant_risk'] = df['merchant'].isin(high_risk_merchants).astype(int) # 1 or 0 
 
-        # extract a feature to see how often the user interacts with this merchant 
-        df['user_merchant_transaction_count'] = df.groupby(['user_id', 'merchant'])['amount'].transform('count')
-
-        # since fraudsters often test stolen cards across many vendors quickly, count unique merchants for each user_id in a rolling 24 hour window 
-        num_distinct_merchants_24h = (
-            df.set_index('timestamp')
-            .groupby('user_id')['merchant']
-            .resample('24h')
-            .nunique()
-            .reset_index()
-            .rename(columns = {'merchant': 'num_distinct_merchants_24h'})
-        )
-        
-        # merge the number of merchants for each user in the last 24 hours correctly back to main df
-        df = df.merge(num_distinct_merchants_24h, on = ['user_id', 'timestamp'], how = 'left')
-        df['num_distinct_merchants_24h'] = df['num_distinct_merchants_24h'].fillna(0)
-
-        df = df.reset_index() # bring timestamp back as a column
-
-        # calculate the merchant's average fraud rate on past transactions 
-        df['merchant_avg_fraud_rate'] = (
-            df.groupby('merchant')['is_fraud']
-            .expanding()
-            .mean()
-            .shift()
-            .reset_index(level = 0, drop = True)
-        )
-        df['merchant_avg_fraud_rate'] = df['merchant_avg_fraud_rate'].fillna(df['merchant_avg_fraud_rate'].mean())
-        
-        # location based anomoalies 
-        df['prev_location'] = df.groupby('user_id')['location'].shift()
-        df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
-        
-        # flag if the location is a new location compared to previous locations 
-        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'location', new_flag_col = 'new_location_flag')
-
-        # flag if the user's home location (most common location) is different than the transactions location (is_location_mismatch)
-        df = flag_home_location_mismatches(df)
-
-        # IP address and device based anomalies 
-        # extract the device count per user for the last 24h and 7 days 
-        df = compute_rolling_unique_count(
-            df, group_col = 'user_id', target_col = 'device_id',
-            time_window = '24h', new_col_name = 'device_count_24h'
-        )
-        df['device_count_24h'] = df['device_count_24h'].fillna(0)
-
-        df = compute_rolling_unique_count(
-            df, group_col = 'user_id', target_col = 'device_id',
-            time_window = '7d', new_col_name = 'device_count_7d'
-        )  
-        df['device_count_7d'] = df['device_count_7d'].fillna(0)
-
-        # create a new device flag, is the device is a new device compared to historical devices for that user, flag it as 1 
-        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'device_id', new_flag_col = 'new_device_flag')
-        df['new_device_flag'] = df['new_device_flag'].fillna(0)
-
-        # extract the ip address count per user for the last 24h and the last 7 days: high count could mean compromised
-        df = compute_rolling_unique_count(
-            df, group_col = 'user_id', target_col = 'ip_address',
-            time_window = '24h', new_col_name = 'ip_count_24h'
-        )  
-        df['ip_count_24h'] = df['ip_count_24h'].fillna(0)
-
-        df = compute_rolling_unique_count(
-            df, group_col = 'user_id', target_col = 'ip_address',
-            time_window = '7d', new_col_name = 'ip_count_7d'
-        )  
-        df['ip_count_7d'] = df['ip_count_7d'].fillna(0)
-
-        # create a new IP address flag, if the transaction has a new IP address compared to historical IP addresses for that user, flag it as 1 
-        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'ip_address', new_flag_col = 'new_ip_flag')
-        df['new_ip_flag'] = df['new_ip_flag'].fillna(0)
-
-        # combined anomaly flag: to see if the transaction has a new deivce id and a new ip address flag 
-        df['new_device_and_new_ip_flag'] = ((df['new_device_flag'] == 1) & (df['new_ip_flag'] == 1)).astype(int)
-
         # extract the feature columns we want to use 
         feature_cols = [
-            'amount', 'is_night', 'is_weekend', 'transaction_day', 'user_activity_24h', 'amount_to_avg_ratio',
-            'merchant_risk', 'merchant', 'is_location_anomalous', 'new_device_flag', 'user_transactions_per_minute',
-            'transaction_hour', 'transaction_hour_sin', 'transaction_hour_cos', 'new_ip_flag', 'new_device_and_new_ip_flag',
-            'device_count_7d', 'device_count_24h', 'ip_count_7d', 'ip_count_24h', 'txn_count_last_5min', 'merchant_avg_fraud_rate',
-            'user_total_spend_todate', 'location', 'amount_vs_median', 'amount_spent_last24h', 'user_merchant_transaction_count'
+            'amount', 'is_night', 'is_weekend','transaction_day', 
+            'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 
+            'merchant'
         ]
-        
+
         if 'is_fraud' not in df.columns:
             raise ValueError('Missing target column: "is_fraud"')
-        
-        # log any NaNs if there are any for inspection 
-        nan_counts = df[feature_cols].isnull().sum()
-
-        if nan_counts.any():
-            logger.warning(f'Still found NaNs in these columns: {nan_counts[nan_counts > 0].to_dict()} - Filling them with 0')
-            df[feature_cols] = df[feature_cols].fillna(0) # if there are any NaNs left, fill them with 0 after logging
 
         return df[feature_cols + ['is_fraud']]
 
@@ -517,32 +231,41 @@ class FraudDetectionTraining:
                 })
 
                 # categorical feature preprocessing
-                categorical_features = ['merchant', 'location']
-                df[categorical_features] = df[categorical_features].astype(str)
-
                 preprocessor = ColumnTransformer(
                     transformers = [
-                        ('cat_encoder', OrdinalEncoder(
+                        ('merchant_encoder', OrdinalEncoder(
                             handle_unknown = 'use_encoded_value',
                             unknown_value = -1, 
                             dtype = np.float32
-                        ), categorical_features),          
+                        ), ['merchant'])          
                     ], 
                     remainder = 'passthrough'
                 )
+
+                # set the objective for optuna to optimize paramters
+                def objective(trial):
+                    params = {
+                        'max_depth': trial.suggest_int('max_depth', 3, 7),
+                        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.1, log = True),
+                        'subsample': trial.suggest_float('subsample', 0.6, 1.0),
+                        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
+                        'gamma': trial.suggest_float('gamma', 0, 0.3),
+                        
+
+
+                    }
 
                 # XGBoost configuration with efficiency optimizations
                 xgb = XGBClassifier(
                     eval_metric = 'aucpr', # area under precision recall curve as we have unbalanced data
                     random_state = self.config['model'].get('seed', 42),
                     reg_lambda = 1.0, # prevents overfitting
-                    scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum(),
                     n_estimators = self.config['model']['params']['n_estimators'],
                     n_jobs = -1,
                     tree_method = self.config['model'].get('tree_method', 'hist')
                 )
 
-                # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalanced dataset)
+                # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalacned dataset)
                 pipeline = ImbPipeline([
                     ('preprocessor', preprocessor),
                     ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
@@ -572,32 +295,14 @@ class FraudDetectionTraining:
                     random_state = self.config['model'].get('seed', 42)
                 )
 
-                # log current memory usage to help debug potential out-of-memory issues
-                logger.info(f'Memory usage before training (MB): {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2:.2f}') # to see if out of memory errors are a reason for creashing if we crash
+                # conduct hyperparameter tuning by outputting a confusion matrix to see how the model is performing 
                 logger.info('Starting hyperparamter tuning...')
-                
-                # train the model with different hyperparameter combinations
                 searcher.fit(X_train, y_train)
                 
                 # find the best model in the pipeline 
                 best_model = searcher.best_estimator_
 
-                # find the importances of each feature
-                importances = best_model.named_steps['classifier'].feature_importances_
-                feature_names = best_model.named_steps['preprocessor'].get_feature_names_out()
-
-                feature_importances_df = pd.DataFrame({
-                    'feature': feature_names,
-                    'importance': importances
-                }).sort_values(by = 'importance', ascending = False)
-
-                # save the feature importances to a csv and log to MLFlow 
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                feature_importances_path = f'feature_importances_{timestamp}.csv'
-                feature_importances_df.to_csv(feature_importances_path, index = False)
-                mlflow.log_artifact(feature_importances_path)
-
-                # find best hyperparameters
+                # find best hypeerparameters
                 best_params = searcher.best_params_
                 logger.info(f'Best hyperparameters: {best_params}')
 
@@ -636,7 +341,6 @@ class FraudDetectionTraining:
                 # log the metrics in MLFlow so we can see the performance of our model
                 mlflow.log_metrics(metrics)
                 mlflow.log_params(best_params)
-                logger.info(f'Logged metrics: {metrics} and Best Parmaters: {best_params} in MLFlow')
 
                 # plot the confusion matrix 
                 cm = confusion_matrix(y_test, y_pred)
@@ -648,31 +352,28 @@ class FraudDetectionTraining:
                 tick_marks = np.arange(2)
                 plt.xticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
                 plt.yticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
-                plt.xlabel('Predicted Label')
-                plt.ylabel('Actual Label')
                 
                 for i in range(2):
                     for j in range(2):
                         # TP, FP, TN, FP
                         plt.text(j, i, format(cm[i, j], 'd'), ha = 'center', va = 'center', color = 'red')
                 plt.tight_layout()
-                cm_filename = f'confusion_matrix_{timestamp}.png'
+                cm_filename = 'confusion_matrix.png'
                 plt.savefig(cm_filename)
                 mlflow.log_artifact(cm_filename) # log confusion matrix to MLFlow
                 plt.close()
-                logger.info(f'Logged Confusion Matrix: {cm_filename} in MLFlow')
                 
                 # plot the precision and recall curve
                 plt.figure(figsize = (10, 6))
                 plt.plot(recall_arr, precision_arr, marker = '.', label = 'Precision-Recall Curve')
+                plt.xlabel('Recall')
                 plt.ylabel('Precision')
                 plt.title('Precision-Recall Curve')
                 plt.legend()
-                pr_curve_filename = f'precision_recall_curve_{timestamp}.png'
+                pr_curve_filename = 'precision_recall_curve.png'
                 plt.savefig(pr_curve_filename)
                 mlflow.log_artifact(pr_curve_filename) # log precision-recall curve to MLFlow
                 plt.close()
-                logger.info(f'Logged Precision-Recall Curve: {pr_curve_filename} in MLFlow')
 
                 # log the best model in MLFlow
                 signature = infer_signature(X_train, y_pred)
@@ -690,3 +391,4 @@ class FraudDetectionTraining:
         except Exception as e:
             logger.error(f'Training failed: {e}', exc_info = True)
             raise 
+
