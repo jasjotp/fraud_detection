@@ -465,7 +465,7 @@ class FraudDetectionTraining:
             'device_count_7d', 'device_count_24h', 'ip_count_7d', 'ip_count_24h', 'txn_count_last_5min', 'merchant_avg_fraud_rate',
             'user_total_spend_todate', 'location', 'amount_vs_median', 'amount_spent_last24h', 'user_merchant_transaction_count'
         ]
-
+        
         if 'is_fraud' not in df.columns:
             raise ValueError('Missing target column: "is_fraud"')
         

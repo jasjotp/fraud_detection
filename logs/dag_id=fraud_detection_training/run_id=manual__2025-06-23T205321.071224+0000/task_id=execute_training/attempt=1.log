@@ -1,0 +1,526 @@
+[2025-06-23T20:53:25.568+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-06-23T20:53:25.606+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-23T20:53:21.071224+00:00 [queued]>
+[2025-06-23T20:53:25.622+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-23T20:53:21.071224+00:00 [queued]>
+[2025-06-23T20:53:25.624+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-06-23T20:53:25.646+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-06-23 20:53:21.071224+00:00
+[2025-06-23T20:53:25.657+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=1263) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-23T20:53:25.659+0000] {standard_task_runner.py:72} INFO - Started process 1264 to run task
+[2025-06-23T20:53:25.659+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'manual__2025-06-23T20:53:21.071224+00:00', '--job-id', '238', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmp3hidk5gg']
+[2025-06-23T20:53:25.661+0000] {standard_task_runner.py:105} INFO - Job 238: Subtask execute_training
+[2025-06-23T20:53:25.732+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training manual__2025-06-23T20:53:21.071224+00:00 [running]> on host fccada8bc1e7
+[2025-06-23T20:53:25.863+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-06-23T20:53:21.071224+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-23T20:53:21.071224+00:00'
+[2025-06-23T20:53:25.864+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-06-23T20:53:25.886+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-06-23T20:53:34.800+0000] {font_manager.py:1639} INFO - generated new fontManager
+[2025-06-23T20:53:35.178+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-06-23T20:53:35.196+0000] {fraud_detection_training.py:105} INFO - Configuration loaded successfully
+[2025-06-23T20:53:35.819+0000] {fraud_detection_training.py:136} INFO - Minio connection verified. Buckets: ['mlflow']
+[2025-06-23T20:53:36.214+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-06-23T20:53:36.214+0000] {fraud_detection_training.py:481} INFO - Starting model training process...
+[2025-06-23T20:53:36.215+0000] {fraud_detection_training.py:152} INFO - Connecting to Kafka Topic: transactions
+[2025-06-23T20:53:36.310+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-23T20:53:36.381+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:36.633+0000] {conn.py:618} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <checking_api_versions_recv> [IPv4 ('15.157.158.196', 9092)]>: Broker version identified as 2.6
+[2025-06-23T20:53:36.873+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:36.875+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-23T20:53:36.877+0000] {consumer.py:120} WARNING - group_id is None: disabling auto-commit.
+[2025-06-23T20:53:36.878+0000] {subscription_state.py:181} INFO - Updating subscribed topics to: ('transactions',)
+[2025-06-23T20:53:36.950+0000] {subscription_state.py:254} INFO - Updated partition assignment: [('transactions', 0), ('transactions', 1), ('transactions', 2), ('transactions', 3), ('transactions', 4), ('transactions', 5)]
+[2025-06-23T20:53:36.988+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-23T20:53:37.026+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-23T20:53:37.063+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-23T20:53:37.097+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-23T20:53:37.126+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-23T20:53:37.155+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-23T20:53:37.157+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:37.187+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:37.217+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:37.246+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:37.277+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:37.305+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T20:53:37.547+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:37.548+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-23T20:53:37.548+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-23T20:53:37.724+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:37.725+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-23T20:53:37.900+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:37.901+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-23T20:53:38.078+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:38.079+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-23T20:53:38.256+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:38.257+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-23T20:53:38.437+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T20:53:38.439+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-23T20:53:38.440+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 5) to offset 0.
+[2025-06-23T20:53:38.441+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 1) to offset 0.
+[2025-06-23T20:53:38.444+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 3) to offset 0.
+[2025-06-23T20:53:38.445+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 2) to offset 0.
+[2025-06-23T20:53:38.446+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 0) to offset 0.
+[2025-06-23T20:53:38.511+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 4) to offset 0.
+[2025-06-23T21:03:37.093+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-23T21:03:37.171+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-23T21:03:37.606+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-23T21:03:37.608+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-23T21:04:50.078+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-23T21:04:50.081+0000] {fetcher.py:784} INFO - Fetch to node 1 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-06-23T21:04:50.082+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-23T21:04:50.083+0000] {fetcher.py:784} INFO - Fetch to node 2 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-06-23T21:04:50.084+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-06-23T21:04:50.086+0000] {fetcher.py:784} INFO - Fetch to node 3 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-06-23T21:04:50.087+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-23T21:04:50.088+0000] {fetcher.py:784} INFO - Fetch to node 5 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-06-23T21:04:50.089+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-06-23T21:04:50.090+0000] {fetcher.py:784} INFO - Fetch to node 6 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-06-23T21:04:50.092+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-23T21:04:50.094+0000] {fetcher.py:784} INFO - Fetch to node 7 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-06-23T21:04:50.095+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-23T21:04:51.794+0000] {fraud_detection_training.py:175} INFO - Total messages read from Kafka: 246542
+[2025-06-23T21:04:53.664+0000] {fraud_detection_training.py:186} INFO - Kafka data read successfully with fraud rate: 3.28
+[2025-06-23T21:08:47.111+0000] {fraud_detection_training.py:573} INFO - Memory usage before training (MB): 1008.85
+[2025-06-23T21:08:47.111+0000] {fraud_detection_training.py:574} INFO - Starting hyperparamter tuning...
+[2025-06-23T21:08:47.765+0000] {logging_mixin.py:190} INFO - 🏃 View run zealous-moose-503 at: http://mlflow-server:5500/#/experiments/1/runs/c8497fc09b9c4c0594623f50eb5e26b2
+[2025-06-23T21:08:47.766+0000] {logging_mixin.py:190} INFO - 🧪 View experiment at: http://mlflow-server:5500/#/experiments/1
+[2025-06-23T21:08:47.821+0000] {fraud_detection_training.py:688} ERROR - Training failed: A given column is not a column of the dataframe
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3791, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "index.pyx", line 152, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 181, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7080, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 364, in _get_column_indices
+    col_idx = all_columns.get_loc(col)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3798, in get_loc
+    raise KeyError(key) from err
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 577, in train_model
+    searcher.fit(X_train, y_train)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1024, in fit
+    self._run_search(evaluate_candidates)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1951, in _run_search
+    evaluate_candidates(
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 970, in evaluate_candidates
+    out = parallel(
+          ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 77, in __call__
+    return super().__call__(iterable_with_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1986, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1914, in _get_sequential_output
+    res = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 139, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_validation.py", line 866, in _fit_and_score
+    estimator.fit(X_train, y_train, **fit_params)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 518, in fit
+    Xt, yt = self._fit(X, y, routed_params, raw_params=params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 430, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 607, in __call__
+    return self._cached_call(args, kwargs, shelving=False)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 562, in _cached_call
+    return self._call(call_id, args, kwargs, shelving)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 832, in _call
+    output = self.func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 1383, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 993, in fit_transform
+    self._validate_column_callables(X)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 552, in _validate_column_callables
+    transformer_to_input_indices[name] = _get_column_indices(X, columns)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 372, in _get_column_indices
+    raise ValueError("A given column is not a column of the dataframe") from e
+ValueError: A given column is not a column of the dataframe
+[2025-06-23T21:08:47.842+0000] {fraud_detection_training_dag.py:37} ERROR - Training failed: A given column is not a column of the dataframe
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3791, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "index.pyx", line 152, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 181, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7080, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 364, in _get_column_indices
+    col_idx = all_columns.get_loc(col)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3798, in get_loc
+    raise KeyError(key) from err
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 577, in train_model
+    searcher.fit(X_train, y_train)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1024, in fit
+    self._run_search(evaluate_candidates)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1951, in _run_search
+    evaluate_candidates(
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 970, in evaluate_candidates
+    out = parallel(
+          ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 77, in __call__
+    return super().__call__(iterable_with_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1986, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1914, in _get_sequential_output
+    res = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 139, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_validation.py", line 866, in _fit_and_score
+    estimator.fit(X_train, y_train, **fit_params)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 518, in fit
+    Xt, yt = self._fit(X, y, routed_params, raw_params=params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 430, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 607, in __call__
+    return self._cached_call(args, kwargs, shelving=False)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 562, in _cached_call
+    return self._call(call_id, args, kwargs, shelving)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 832, in _call
+    output = self.func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 1383, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 993, in fit_transform
+    self._validate_column_callables(X)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 552, in _validate_column_callables
+    transformer_to_input_indices[name] = _get_column_indices(X, columns)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 372, in _get_column_indices
+    raise ValueError("A given column is not a column of the dataframe") from e
+ValueError: A given column is not a column of the dataframe
+[2025-06-23T21:08:47.863+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3791, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "index.pyx", line 152, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 181, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7080, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 364, in _get_column_indices
+    col_idx = all_columns.get_loc(col)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3798, in get_loc
+    raise KeyError(key) from err
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 577, in train_model
+    searcher.fit(X_train, y_train)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1024, in fit
+    self._run_search(evaluate_candidates)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1951, in _run_search
+    evaluate_candidates(
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 970, in evaluate_candidates
+    out = parallel(
+          ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 77, in __call__
+    return super().__call__(iterable_with_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1986, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1914, in _get_sequential_output
+    res = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 139, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_validation.py", line 866, in _fit_and_score
+    estimator.fit(X_train, y_train, **fit_params)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 518, in fit
+    Xt, yt = self._fit(X, y, routed_params, raw_params=params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 430, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 607, in __call__
+    return self._cached_call(args, kwargs, shelving=False)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 562, in _cached_call
+    return self._call(call_id, args, kwargs, shelving)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 832, in _call
+    output = self.func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 1383, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 993, in fit_transform
+    self._validate_column_callables(X)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 552, in _validate_column_callables
+    transformer_to_input_indices[name] = _get_column_indices(X, columns)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 372, in _get_column_indices
+    raise ValueError("A given column is not a column of the dataframe") from e
+ValueError: A given column is not a column of the dataframe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: A given column is not a column of the dataframe
+[2025-06-23T21:08:47.879+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=fraud_detection_training, task_id=execute_training, run_id=manual__2025-06-23T20:53:21.071224+00:00, execution_date=20250623T205321, start_date=20250623T205325, end_date=20250623T210847
+[2025-06-23T21:08:47.922+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-06-23T21:08:47.922+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 238 for task execute_training (Model training failed: A given column is not a column of the dataframe; 1264)
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3791, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "index.pyx", line 152, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 181, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7080, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 364, in _get_column_indices
+    col_idx = all_columns.get_loc(col)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3798, in get_loc
+    raise KeyError(key) from err
+KeyError: 'location'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 577, in train_model
+    searcher.fit(X_train, y_train)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1024, in fit
+    self._run_search(evaluate_candidates)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 1951, in _run_search
+    evaluate_candidates(
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_search.py", line 970, in evaluate_candidates
+    out = parallel(
+          ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 77, in __call__
+    return super().__call__(iterable_with_config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1986, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/parallel.py", line 1914, in _get_sequential_output
+    res = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/parallel.py", line 139, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/model_selection/_validation.py", line 866, in _fit_and_score
+    estimator.fit(X_train, y_train, **fit_params)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 518, in fit
+    Xt, yt = self._fit(X, y, routed_params, raw_params=params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 430, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 607, in __call__
+    return self._cached_call(args, kwargs, shelving=False)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 562, in _cached_call
+    return self._call(call_id, args, kwargs, shelving)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/joblib/memory.py", line 832, in _call
+    output = self.func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/imblearn/pipeline.py", line 1383, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 993, in fit_transform
+    self._validate_column_callables(X)
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/compose/_column_transformer.py", line 552, in _validate_column_callables
+    transformer_to_input_indices[name] = _get_column_indices(X, columns)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/sklearn/utils/_indexing.py", line 372, in _get_column_indices
+    raise ValueError("A given column is not a column of the dataframe") from e
+ValueError: A given column is not a column of the dataframe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: A given column is not a column of the dataframe
+[2025-06-23T21:08:48.067+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2025-06-23T21:08:48.103+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-06-23T21:08:48.106+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

@@ -272,7 +272,7 @@ class TransactionProducer():
             fraud_signals.append("Random fraud (noise)")
             
         # add the fraud signals to the note column in transaction is there are any fradulent transactions and set it_fraud to 1
-        if fraud_signals and random.random() < 0.01:
+        if fraud_signals:
             transaction['is_fraud'] = 1 
             transaction['note'] = '; '.join(fraud_signals)
         
