@@ -4,6 +4,7 @@ kafka-python
 python-dotenv
 pyyaml
 catboost
+optuna
 pyspark
 lightgbm
 imblearn
