@@ -6,8 +6,7 @@ import mlflow
 import pandas as pd
 import numpy as np
 import json
-import optuna
-from optuna.integration import SklearnPruningCallback
+from datetime import datetime
 from kafka import KafkaConsumer
 from mlflow.models.signature import infer_signature
 from dotenv import load_dotenv
@@ -32,17 +31,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# helper function to flag if a value is new for a user compared to their previous ones, for location, device_id, and ip_address
-def flag_new_values_vectorized(df, group_col: str, value_col: str, new_flag_col: str) -> pd.DataFrame:
-    def mark_new(series):
-        seen = set()
-
-        # if x hasn’t been seen, mark as 1 and add to seen, otherwise mark as 0
-        return series.apply(lambda x: 1 if x not in seen and not seen.add(x) else 0)
-    
-    df[new_flag_col] = df.groupby(group_col)[value_col].transform(mark_new)
-    return df
-
 # helper function to flag if the transaction's location is different from user's most common location (home location)
 def flag_home_location_mismatches(df):
     # get the most common location, using the mode, per user 
@@ -54,24 +42,6 @@ def flag_home_location_mismatches(df):
     # flag if transaction location != home location 
     df['is_location_mismatch'] = (df['location'] != df['home_location']).astype(int)
     return df 
-
-# helper function to compute the rolling count of features 
-def compute_rolling_unique_count(df, group_col: str, target_col: str, time_window: str, new_col_name: str) -> pd.Series:
-    df = df.copy()
-
-    # convert a target column to numeric using .cat 
-    df['_encoded'] = df[target_col].astype('category').cat.codes
-
-    tmp = (
-        df.set_index('timestamp')
-        .groupby(group_col)['_encoded']
-        .rolling(time_window, closed = 'left')
-        .apply(lambda x: x.nunique(), raw = False)
-        .reset_index()
-        .rename(columns = {'_encoded': new_col_name})
-    )
-
-    return df.merge(tmp, on = [group_col, 'timestamp'], how = 'left').drop(columns = ['_encoded'])
 
 # class that is used for the model training 
 class FraudDetectionTraining:
@@ -209,7 +179,7 @@ class FraudDetectionTraining:
 
         # flag transaction day 
         df['transaction_day'] = df['timestamp'].dt.day
-
+ 
         # flag transaction day of week 
         df['transaction_dayOfWeek'] = df['timestamp'].dt.dayofweek
 
@@ -219,7 +189,7 @@ class FraudDetectionTraining:
         # count transactions per user per minute 
         df['user_transactions_per_minute'] = df.groupby(['user_id', 'minute'])['timestamp'].transform('count')
 
-        # flag if transaction count in that minute is 5 or more 
+        # flag is transaction count in that minute is 5 or more 
         df['is_high_velocity'] = (df['user_transactions_per_minute'] >= 5).astype(int)
 
         # extract a feature to find the number of days it has been since the user transacted 
@@ -251,7 +221,8 @@ class FraudDetectionTraining:
             lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
         )
 
-        # find the  time between past transactions per user
+
+        # find the average time between past transactions per user
         df['time_diff'] = df.groupby('user_id')['timestamp'].diff().dt.total_seconds()
 
         # find the rolling average transaction interval for that user for each transaction (find each users average time between past transactions)
@@ -262,6 +233,7 @@ class FraudDetectionTraining:
             .shift()
             .reset_index(level = 0, drop = True)
         )
+
         df['user_avg_transaction_interval'] = df['user_avg_transaction_interval'].fillna(df['user_avg_transaction_interval'].median())
 
         # calculate the zscore amount per user to catch outliers based on each user's transaction history 
@@ -298,8 +270,12 @@ class FraudDetectionTraining:
         )
         df = df.merge(txn_count_5min, on = ['user_id', 'timestamp'], how = 'left')
         df['txn_count_last_5min'].fillna(0, inplace = True)
-
+        
         # extract monetary features
+        # extract the last transaction amount, as compared to the avererage amount of the last 7 days
+        df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
+            lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
+        )
 
         # extract the rolling standard deviation for each user for their last 10 tramsactions
         df['user_transaction_amount_std'] = (
@@ -308,9 +284,12 @@ class FraudDetectionTraining:
         )
         df['user_transaction_amount_std'].fillna(df['user_transaction_amount_std'].median(), inplace = True)
 
-        # extract the last transaction amount, as compared to the avererage amount of the last 7 days
-        df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
-            lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
+        # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
+        df['amount_to_avg_ratio'] = (
+            df.groupby('user_id')['amount']
+            .apply(lambda g: g / g.rolling(7, min_periods = 1).mean())
+            .reset_index(level = 0, drop = True)
+            .fillna(1.0)
         )
 
         # extract the average amount spent by each user in the last 7 days 
@@ -354,7 +333,7 @@ class FraudDetectionTraining:
         df = df.merge(amount_spent_last24h, on = ['user_id', 'timestamp'], how = 'left')
         df['amount_spent_last24h'] = df['amount_spent_last24h'].fillna(0)
 
-        # extract a ratio for the amount a user spent in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
+        # extract a ratio for the amount a user spemt in the last 24h compared to their historical total spend to capture binge behaviour like if a user transaction has suddently spiked and spent 60% of their money in the last 24h, that is suspicious
         df['user_spending_ratio_last24h'] = (
             df['amount_spent_last24h'] / df['user_total_spend_todate'].replace(0, np.nan)
         ).fillna(0)
@@ -398,25 +377,18 @@ class FraudDetectionTraining:
             .reset_index(level = 0, drop = True)
         )
         df['merchant_avg_fraud_rate'] = df['merchant_avg_fraud_rate'].fillna(df['merchant_avg_fraud_rate'].mean())
-        
+
         # location based anomoalies 
         df['prev_location'] = df.groupby('user_id')['location'].shift()
         df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
-        
-        # flag if the location is a new location compared to previous locations 
-        df = flag_new_values_vectorized(df, group_col = 'user_id', value_col = 'location', new_flag_col = 'new_location_flag')
 
         # flag if the user's home location (most common location) is different than the transactions location (is_location_mismatch)
         df = flag_home_location_mismatches(df)
 
         # extract the feature columns we want to use 
         feature_cols = [
-            'amount', 'is_night', 'is_weekend', 'transaction_day', 'user_activity_24h', 'amount_to_avg_ratio',
-            'merchant_risk', 'merchant', 'merchant_avg_fraud_rate', 'is_location_anomalous', 'user_transactions_per_minute',
-            'transaction_hour', 'transaction_hour_sin', 'transaction_hour_cos',
-            'txn_count_last_5min', 
-            'user_total_spend_todate', 'location', 'amount_vs_median', 'amount_spent_last24h', 'user_merchant_transaction_count',
-            'new_location_flag'
+            'amount', 'is_night', 'is_weekend','transaction_day', 
+            'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
         ]
 
         if 'is_fraud' not in df.columns:
@@ -469,131 +441,79 @@ class FraudDetectionTraining:
                             handle_unknown = 'use_encoded_value',
                             unknown_value = -1, 
                             dtype = np.float32
-                        ), ['merchant']),
-
-                        ('location_encoder', OrdinalEncoder(
-                            handle_unknown = 'use_encoded_value',
-                            unknown_value = -1,
-                            dtype = np.float32
-                        ), ['location'])          
+                        ), ['merchant'])          
                     ], 
                     remainder = 'passthrough'
                 )
 
-                # set the objective for optuna to optimize paramters
-                def objective(trial):
-                    # feature selection flags
-                    feature_flags = {
-                        'amount': trial.suggest_categorical('use_amount', [True, False]),
-                        'is_night': trial.suggest_categorical('use_is_night', [True, False]),
-                        'is_weekend': trial.suggest_categorical('use_is_weekend', [True, False]),
-                        'transaction_day': trial.suggest_categorical('use_transaction_day', [True, False]),
-                        'user_activity_24h': trial.suggest_categorical('use_user_activity_24h', [True, False]),
-                        'amount_to_avg_ratio': trial.suggest_categorical('use_amount_to_avg_ratio', [True, False]),
-                        'merchant_risk': trial.suggest_categorical('use_merchant_risk', [True, False]),
-                        'merchant': trial.suggest_categorical('use_merchant', [True, False]),
-                        'merchant_avg_fraud_rate': trial.suggest_categorical('use_merchant_avg_fraud_rate', [True, False]),
-                        'is_location_anomalous': trial.suggest_categorical('use_is_location_anomalous', [True, False]),
-                        'user_transactions_per_minute': trial.suggest_categorical('use_user_transactions_per_minute', [True, False]),
-                        'transaction_hour': trial.suggest_categorical('use_transaction_hour', [True, False]),
-                        'transaction_hour_sin': trial.suggest_categorical('use_transaction_hour_sin', [True, False]),
-                        'transaction_hour_cos': trial.suggest_categorical('use_transaction_hour_cos', [True, False]),
-                        'txn_count_last_5min': trial.suggest_categorical('use_txn_count_last_5min', [True, False]),
-                        'user_total_spend_todate': trial.suggest_categorical('use_user_total_spend_todate', [True, False]),
-                        'location': trial.suggest_categorical('use_location', [True, False]),
-                        'amount_vs_median': trial.suggest_categorical('use_amount_vs_median', [True, False]),
-                        'amount_spent_last24h': trial.suggest_categorical('use_amount_spent_last24h', [True, False]),
-                        'user_merchant_transaction_count': trial.suggest_categorical('use_user_merchant_transaction_count', [True, False]),
-                        'new_location_flag': trial.suggest_categorical('use_new_location_flag', [True, False])
-                    }
+                # XGBoost configuration with efficiency optimizations
+                xgb = XGBClassifier(
+                    eval_metric = 'aucpr', # area under precision recall curve as we have unbalanced data
+                    random_state = self.config['model'].get('seed', 42),
+                    reg_lambda = 1.0, # prevents overfitting
+                    n_estimators = self.config['model']['params']['n_estimators'],
+                    n_jobs = -1,
+                    tree_method = self.config['model'].get('tree_method', 'hist')
+                )
 
-                    # define the features we want to keep in hte model for sure (the below combination of features gives ~80% precision)
-                    base_features = [
-                        'amount', 'is_night', 'is_weekend','transaction_day', 
-                        'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
-                    ]
-
-                    optional_features = [k for k, v in feature_flags.items() if v]
-                    selected_features = base_features + optional_features
-                    X_selected = X_train[selected_features]
-
-                    params = {
-                        'max_depth': trial.suggest_int('max_depth', 3, 7),
-                        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.1, log = True),
-                        'subsample': trial.suggest_float('subsample', 0.6, 1.0),
-                        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
-                        'gamma': trial.suggest_float('gamma', 0, 0.3),
-                        'reg_alpha': trial.suggest_float('reg_alpha', 0, 0.5), # L1 regularization weight
-                        'n_estimators': self.config['model']['params']['n_estimators'],
-                        'eval_metric': 'aucpr',
-                        'tree_method': self.config['model'].get('tree_method', 'hist'),
-                        'random_state': self.config['model'].get('seed', 42),
-                        'n_jobs': -1
-                    }
-
-                    # XGBoost configuration with optimizations
-                    xgb = XGBClassifier(**params)
-
-                    # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalacned dataset)
-                    pipeline = ImbPipeline([
-                        ('preprocessor', preprocessor),
-                        ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
-                        ('classifier', xgb) # XGBoost classififer for prediction
-                    ], memory = './cache') # put the pipeline in cache so computation is faster
-
-                    # optimizing for F-beta score (beta=2 emphasizes recall)
-                    scores = cross_val_score(
-                        pipeline,
-                        X_train,
-                        y_train,
-                        scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0), # prioritize recall with beta = 2, as we care more about catching false negatives (missing a fradulent transction) instead of catching a few extra false positives (non-fradulent transactioons flagged as fraudulent)
-                        cv = StratifiedKFold(n_splits = 3, shuffle = True, random_state = 42),
-                        n_jobs = -1
-                    )
-                    return np.mean(scores)
-                
-                # conduct hyperparamter tuning/optimization using Optuna
-                study = optuna.create_study(direction = 'maximize')
-                logger.info('Starting Optuna hyperparameter optimization...')
-                study.optimize(objective, n_trials = 20, show_progress_bar = True)
-
-                logger.info(f'Best hyperparameters using Optuna: {study.best_params}')
-                mlflow.log_params(study.best_params)
-
-                # define the features we want to keep in hte model for sure (the below combination of features gives ~80% precision)
-                base_features = [
-                        'amount', 'is_night', 'is_weekend','transaction_day', 
-                        'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
-                ]
-
-                # reconstruct the best feature list from the best trial 
-                best_feature_flags = {k.replace('_use', ''): v for k, v in study.best_trial.params.items() if k.startswith('use_') and v}
-
-                # get the list of best features (keys where value is True)
-                best_features = base_features + list(best_feature_flags.keys())
-
-                # log the selected features to MLflow
-                mlflow.log_param('selected_features', ','.join(best_features))
-
-                # find the best model in the pipeline 
-                best_model = ImbPipeline([
+                # preprocessing pipeline to train the model (using imbpipeline as we are handling an imbalacned dataset)
+                pipeline = ImbPipeline([
                     ('preprocessor', preprocessor),
-                    ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))),
-                    ('classifier', XGBClassifier(
-                        **study.best_params,
-                        eval_metric = 'aucpr',
-                        tree_method = self.config['model'].get('tree_method', 'hist'),
-                        random_state = self.config['model'].get('seed', 42),
-                        n_jobs = -1
-                    ))
-                ])
+                    ('smote', SMOTE(random_state = self.config['model'].get('seed', 42))), # address the class imbalance by using boosting methods (SMOTE) so the model can recognize both classes
+                    ('classifier', xgb) # XGBoost classififer for prediction
+                ], memory = './cache') # put the pipeline in cache so computation is faster
 
-                # train the model on the best features that optuna selected 
-                X_train_selected = X_train[best_features]
-                best_model.fit(X_train_selected, y_train)
+                # hyperparameter search space design
+                param_dist = {
+                    'classifier__max_depth': [3, 5, 7], # gets max tree depth to tune model's complexity
+                    'classifier__learning_rate': [0.01, 0.05, 0.1], # stepsize the shrinkage when you are trying to boost the model and prevent overfitting
+                    'classifier__subsample': [0.6, 0.8, 1.0], # number of samples that are used to fit individual based learners (reduces overfitting)
+                    'classifier__colsample_bytree': [0.6, 0.8, 1.0], # fraction of features used to fit individual based learners (helps with randomness)
+                    'classifier__gamma': [0, 0.1, 0.3], # minimum loss reduction that is required to make further partitions on a leaf node
+                    'classifier__reg_alpha': [0, 0.1, 0.5] # L1 regularizaion term
+                }
+
+                # optimizing for F-beta score (beta=2 emphasizes recall)
+                searcher = RandomizedSearchCV(
+                    pipeline, 
+                    param_dist,
+                    n_iter = 20,
+                    scoring = make_scorer(fbeta_score, beta = 2, zero_division = 0),
+                    cv = StratifiedKFold(n_splits = 3, shuffle = True),
+                    n_jobs = 1,
+                    refit = True,
+                    error_score = 'raise',
+                    random_state = self.config['model'].get('seed', 42)
+                )
+
+                # conduct hyperparameter tuning by outputting a confusion matrix to see how the model is performing 
+                logger.info('Starting hyperparamter tuning...')
+                searcher.fit(X_train, y_train)
+                
+                # find the best model in the pipeline 
+                best_model = searcher.best_estimator_
+    
+                # find the importances of each feature
+                importances = best_model.named_steps['classifier'].feature_importances_
+                feature_names = best_model.named_steps['preprocessor'].get_feature_names_out()
+
+                feature_importances_df = pd.DataFrame({
+                    'feature': feature_names,
+                    'importance': importances
+                }).sort_values(by = 'importance', ascending = False)
+
+                # save the feature importances to a csv and log to MLFlow 
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                feature_importances_path = f'feature_importances_{timestamp}.csv'
+                feature_importances_df.to_csv(feature_importances_path, index = False)
+                mlflow.log_artifact(feature_importances_path)
+
+                # find best hypeerparameters
+                best_params = searcher.best_params_
+                logger.info(f'Best hyperparameters: {best_params}')
 
                 # threshold optimization using the training data
-                train_proba = best_model.predict_proba(X_train_selected)[:, 1]
+                train_proba = best_model.predict_proba(X_train)[:, 1]
 
                 # get the precision and recall
                 precision_arr, recall_arr, thresholds_arr = precision_recall_curve(y_train, train_proba)
@@ -607,8 +527,7 @@ class FraudDetectionTraining:
                 logger.info(f'Optimal threhsold determined: {best_threshold:.4f}')
 
                 # model evaluation
-                X_test_selected = X_test[best_features]
-                X_test_processed = best_model.named_steps['preprocessor'].transform(X_test_selected)
+                X_test_processed = best_model.named_steps['preprocessor'].transform(X_test)
 
                 # probability prediction on test set from the classifier 
                 test_proba = best_model.named_steps['classifier'].predict_proba(X_test_processed)[:, 1]
@@ -627,6 +546,7 @@ class FraudDetectionTraining:
 
                 # log the metrics in MLFlow so we can see the performance of our model
                 mlflow.log_metrics(metrics)
+                mlflow.log_params(best_params)
 
                 # plot the confusion matrix 
                 cm = confusion_matrix(y_test, y_pred)
@@ -635,14 +555,24 @@ class FraudDetectionTraining:
                 plt.imshow(cm, interpolation = 'nearest', cmap = plt.cm.Blues)
                 plt.title('Confusion Matrix')
                 plt.colorbar()
+
                 tick_marks = np.arange(2)
-                plt.xticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
-                plt.yticks(tick_marks, labels = ['Not Fraud', 'Fraud'])
-                
+                plt.xticks(tick_marks, labels = ['Not Fraud (0)', 'Fraud (1)'])
+                plt.yticks(tick_marks, labels = ['Not Fraud (0)', 'Fraud (1)'])
+                plt.xlabel('Predicted Label')
+                plt.ylabel('Actual Label')
+
+                labels = [['TN', 'FP'], ['FN', 'TP']]
+
                 for i in range(2):
                     for j in range(2):
                         # TP, FP, TN, FP
-                        plt.text(j, i, format(cm[i, j], 'd'), ha = 'center', va = 'center', color = 'red')
+                        plt.text(j, i, 
+                                f'{labels[i][j]}\n{cm[i, j]}', 
+                                ha = 'center', 
+                                va = 'center', 
+                                color = 'red',
+                                fontsize = 12)
                 plt.tight_layout()
                 cm_filename = 'confusion_matrix.png'
                 plt.savefig(cm_filename)
@@ -677,4 +607,3 @@ class FraudDetectionTraining:
         except Exception as e:
             logger.error(f'Training failed: {e}', exc_info = True)
             raise 
-

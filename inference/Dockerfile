@@ -51,7 +51,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --default-timeout=100 --retries=5 -r requirements.txt
 
 # Copy application files
 COPY main.py .

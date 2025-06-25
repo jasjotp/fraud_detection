@@ -1,0 +1,208 @@
+[2025-06-25T00:23:02.056+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-06-25T00:23:02.085+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-25T00:22:58.920503+00:00 [queued]>
+[2025-06-25T00:23:02.107+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-06-25T00:22:58.920503+00:00 [queued]>
+[2025-06-25T00:23:02.109+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-06-25T00:23:02.143+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-06-25 00:22:58.920503+00:00
+[2025-06-25T00:23:02.153+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=104) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-25T00:23:02.155+0000] {standard_task_runner.py:72} INFO - Started process 105 to run task
+[2025-06-25T00:23:02.168+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'manual__2025-06-25T00:22:58.920503+00:00', '--job-id', '274', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmpnsz_qajf']
+[2025-06-25T00:23:02.169+0000] {standard_task_runner.py:105} INFO - Job 274: Subtask execute_training
+[2025-06-25T00:23:02.248+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training manual__2025-06-25T00:22:58.920503+00:00 [running]> on host 89504ee0c6ba
+[2025-06-25T00:23:02.403+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-06-25T00:22:58.920503+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-25T00:22:58.920503+00:00'
+[2025-06-25T00:23:02.404+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-06-25T00:23:02.423+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-06-25T00:23:10.015+0000] {font_manager.py:1639} INFO - generated new fontManager
+[2025-06-25T00:23:10.273+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-06-25T00:23:10.285+0000] {fraud_detection_training.py:59} INFO - Configuration loaded successfully
+[2025-06-25T00:23:10.723+0000] {fraud_detection_training.py:90} INFO - Minio connection verified. Buckets: ['mlflow']
+[2025-06-25T00:23:11.171+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-06-25T00:23:11.172+0000] {fraud_detection_training.py:196} INFO - Starting model training process...
+[2025-06-25T00:23:11.172+0000] {fraud_detection_training.py:106} INFO - Connecting to Kafka Topic: transactions
+[2025-06-25T00:23:11.247+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-25T00:23:11.323+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:11.597+0000] {conn.py:618} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <checking_api_versions_recv> [IPv4 ('35.182.170.137', 9092)]>: Broker version identified as 2.6
+[2025-06-25T00:23:11.852+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:11.853+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-25T00:23:11.854+0000] {consumer.py:120} WARNING - group_id is None: disabling auto-commit.
+[2025-06-25T00:23:11.854+0000] {subscription_state.py:181} INFO - Updating subscribed topics to: ('transactions',)
+[2025-06-25T00:23:11.925+0000] {subscription_state.py:254} INFO - Updated partition assignment: [('transactions', 0), ('transactions', 1), ('transactions', 2), ('transactions', 3), ('transactions', 4), ('transactions', 5)]
+[2025-06-25T00:23:11.956+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-25T00:23:11.994+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-25T00:23:12.026+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-25T00:23:12.051+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-25T00:23:12.077+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-06-25T00:23:12.098+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-06-25T00:23:12.099+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:12.123+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:12.148+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:12.173+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:12.195+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:12.216+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:23:12.443+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:12.444+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-25T00:23:12.444+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-25T00:23:12.620+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:12.620+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-25T00:23:12.791+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:12.792+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-25T00:23:12.963+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:12.964+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-25T00:23:13.135+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:13.136+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-06-25T00:23:13.329+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:23:13.330+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-06-25T00:23:13.331+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 1) to offset 0.
+[2025-06-25T00:23:13.333+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 5) to offset 0.
+[2025-06-25T00:23:13.333+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 2) to offset 0.
+[2025-06-25T00:23:13.334+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 3) to offset 0.
+[2025-06-25T00:23:13.334+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 0) to offset 0.
+[2025-06-25T00:23:13.402+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 4) to offset 0.
+[2025-06-25T00:28:11.965+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=11 host=b11-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b11-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-06-25T00:28:12.038+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=11 host=b11-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-06-25T00:28:12.445+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=11 host=b11-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-06-25T00:28:12.446+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=11 host=b11-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-06-25T00:33:54.355+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-25T00:33:54.357+0000] {fetcher.py:784} INFO - Fetch to node 1 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-06-25T00:33:54.358+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-25T00:33:54.359+0000] {fetcher.py:784} INFO - Fetch to node 2 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-06-25T00:33:54.359+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-06-25T00:33:54.360+0000] {fetcher.py:784} INFO - Fetch to node 3 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-06-25T00:33:54.360+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-25T00:33:54.361+0000] {fetcher.py:784} INFO - Fetch to node 5 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-06-25T00:33:54.362+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-06-25T00:33:54.362+0000] {fetcher.py:784} INFO - Fetch to node 6 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-06-25T00:33:54.363+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-06-25T00:33:54.363+0000] {fetcher.py:784} INFO - Fetch to node 7 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.11, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-06-25T00:33:54.364+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.11, node_id=11 host=b11-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-06-25T00:33:56.125+0000] {fraud_detection_training.py:139} INFO - Kafka data read successfully with fraud rate: 0.36
+[2025-06-25T00:34:14.221+0000] {fraud_detection_training.py:284} INFO - Starting hyperparamter tuning...
+[2025-06-25T00:39:07.629+0000] {logging_mixin.py:190} INFO - 🏃 View run bald-jay-15 at: http://mlflow-server:5500/#/experiments/1/runs/22928bcb4e4a44acb71371b7570befb2
+[2025-06-25T00:39:07.631+0000] {logging_mixin.py:190} INFO - 🧪 View experiment at: http://mlflow-server:5500/#/experiments/1
+[2025-06-25T00:39:07.665+0000] {fraud_detection_training.py:392} ERROR - Training failed: name 'datetime' is not defined
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 300, in train_model
+    # hyperparameter search space design
+                ^^^^^^^^
+NameError: name 'datetime' is not defined. Did you forget to import 'datetime'
+[2025-06-25T00:39:07.686+0000] {fraud_detection_training_dag.py:37} ERROR - Training failed: name 'datetime' is not defined
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 300, in train_model
+    # hyperparameter search space design
+                ^^^^^^^^
+NameError: name 'datetime' is not defined. Did you forget to import 'datetime'
+[2025-06-25T00:39:07.706+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 300, in train_model
+    # hyperparameter search space design
+                ^^^^^^^^
+NameError: name 'datetime' is not defined. Did you forget to import 'datetime'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: name 'datetime' is not defined
+[2025-06-25T00:39:07.716+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=fraud_detection_training, task_id=execute_training, run_id=manual__2025-06-25T00:22:58.920503+00:00, execution_date=20250625T002258, start_date=20250625T002302, end_date=20250625T003907
+[2025-06-25T00:39:07.745+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-06-25T00:39:07.745+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 274 for task execute_training (Model training failed: name 'datetime' is not defined; 105)
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 300, in train_model
+    # hyperparameter search space design
+                ^^^^^^^^
+NameError: name 'datetime' is not defined. Did you forget to import 'datetime'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: name 'datetime' is not defined
+[2025-06-25T00:39:07.861+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2025-06-25T00:39:07.972+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-06-25T00:39:07.974+0000] {local_task_job_runner.py:245} INFO - ::endgroup::
