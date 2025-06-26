@@ -6,6 +6,7 @@ import mlflow
 import pandas as pd
 import numpy as np
 import json
+import joblib
 from datetime import datetime
 from kafka import KafkaConsumer
 from mlflow.models.signature import infer_signature
@@ -599,6 +600,11 @@ class FraudDetectionTraining:
                     signature = signature,
                     registered_model_name = 'fraud_detection_model'
                 )
+
+                # log the model locally 
+                os.makedirs('/app/models', exist_ok = True)
+
+                joblib.dump(best_model, '/app/models/fraud_detection_model.pkl')
 
                 logger.info(f'Training successfully completed with metrics: {metrics}')
 

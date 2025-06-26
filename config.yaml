@@ -14,8 +14,6 @@ kafka:
   output_topic: "fraud_predictions"
   timeout: 600000
 
-# features: 
-
 model:
   test_size: 0.2
   seed: 42 # makes sure model is constant 
@@ -29,4 +27,11 @@ model:
     tree_method: 'hist'
   path: "/app/models/fraud_detection_model.pkl"
 
-# spark:
+spark:
+  app_name: 'FraudDetectionTraining'
+  packages: "org.mlflow:mlflow-spark:2.6.0,com.google.guava:guava:30.1.1-jre,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.4,org.apache.hadoop:hadoop-aws:3.3.0,com.amazonaws:aws-java-sdk:1.11.469"
+  shuffle_partitions: 200
+  checkpoint_location: 'checkpoint'
+
+
+
