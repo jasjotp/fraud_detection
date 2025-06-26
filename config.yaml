@@ -12,6 +12,8 @@ kafka:
   password: "YjrlsQeZmoaPCLIvyyoE0dMohu8OulNMOz3rxgDG/LvVlYCUlKohmLceshBl0SjH"
   topic: "transactions"
   output_topic: "fraud_predictions"
+  security_protocol: "SASL_SSL"
+  sasl_mechanism: "PLAIN"
   timeout: 600000
 
 model:
