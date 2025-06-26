@@ -4,6 +4,8 @@ import pickle
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
                               IntegerType, DoubleType, TimestampType)
+from pyspark.sql.functions import (from_json, col, hour, dayofmonth,
+                                  dayofweek, when, lit, coalesce)
 from dotenv import load_dotenv
 import yaml
 import json
@@ -120,7 +122,16 @@ class FraudDetectionInference:
             StructField('timestamp', TimestampType(), nullable = True),
             StructField('location', StringType(), nullable = True)
         ])
-        
+
+        # parse the transactions that come in
+        parsed_df = (df.selectExpr('CAST(value AS STRING)')
+                    .select(from_json(col('value'), json_schema).alias('data'))
+                    .select('data.*')
+                    )
+
+        # return the parsed and streamed data 
+        return parsed_df 
+    
     # function to run infernence on the model so it is trained on new data that comes in 
     def run_inference(self):
         df = self.read_from_kafka()
