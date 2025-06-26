@@ -1,5 +1,6 @@
 import os 
-import logging 
+import logging
+import pickle 
 from pyspark.sql import SparkSession
 from dotenv import load_dotenv
 import yaml
@@ -26,7 +27,21 @@ class FraudDetectionInference:
         load_dotenv(dotenv_path = '/app/.env')
         self.config = self.load_config(config_path)
         self.spark = self.init_spark_session()
-        
+        self.model = self.load_model(self.config['model']['path'])
+        self.broadcast_model = self.spark.sparkContext.broadcast(self.model)
+        logger.debug(f'Environment variables loaded: {dict(os.environ)}')
+
+    # function that loads the model 
+    def load_model(self, model_path):
+        try:
+            # try to open the model path 
+            with open(model_path, 'r') as f:
+                model = pickle.load(f)
+                logger.info('Model loaded from: {model_path}')
+                return model
+        except Exception as e:
+            logger.error('Error loading model: {e}')
+
     # function to load config for Kafka 
     @staticmethod
     def load_config(config_path):
@@ -51,3 +66,7 @@ class FraudDetectionInference:
         except Exception as e:
             logger.error(f'Error initiailizing Spark Session: {e}')
             raise
+
+if __name__ == "__main__":
+    inference = FraudDetectionInference(config_path = '/app/config.yaml')
+    inference.run_inference()
