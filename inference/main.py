@@ -9,12 +9,10 @@ from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf,
                                   dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag)
 from pyspark.sql.window import Window
 from dotenv import load_dotenv
-from mlflow.tracking import MlflowClient
 import mlflow
+from mlflow.tracking import MlflowClient
 import yaml
 import json
-
-from dags.fraud_detection_training.py import read_from_kafka
 
 logging.basicConfig(
     level = logging.INFO,
@@ -81,7 +79,7 @@ class FraudDetectionInference:
     # helper function to read data from Kafka
     def read_from_kafka(self):
         # load Kafka configuration parameters with fallback values
-        logger.info(f'Reading data from Kafka topic: {self.config['kafka']['topic']}')
+        logger.info(f"Reading data from Kafka topic: {self.config['kafka']['topic']}")
         kafka_bootstrap_servers = self.config['kafka']['bootstrap_servers']
         kafka_topic = self.config['kafka']['topic']
         kafka_security_protocol = self.config['kafka'].get('security_protocol', 'SASL_SSL')
@@ -338,5 +336,8 @@ class FraudDetectionInference:
         .awaitTermination()
 
 if __name__ == "__main__":
+    # initialize the pipeline with configuration variables
     inference = FraudDetectionInference(config_path = '/app/config.yaml')
+
+    # start streaming process and block until termination
     inference.run_inference()
