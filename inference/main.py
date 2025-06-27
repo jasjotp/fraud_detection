@@ -29,7 +29,7 @@ class FraudDetectionInference:
     sasl_mechanism = None 
     username = None
     password = None 
-    sasl_jaa_config = None 
+    sasl_jaas_config = None 
 
     # create the initialization function 
     def __init__(self, config_path = '/app/config.yaml'):
@@ -44,9 +44,9 @@ class FraudDetectionInference:
     def load_model(self, model_path):
         try:
             # try to open the model path 
-            with open(model_path, 'r') as f:
+            with open(model_path, 'rb') as f:
                 model = pickle.load(f)
-                logger.info('Model loaded from: {model_path}')
+                logger.info(f'Model loaded from: {model_path}')
                 return model
         except Exception as e:
             logger.error('Error loading model: {e}')
@@ -198,11 +198,15 @@ class FraudDetectionInference:
     # function to add features into the dataframe 
     def add_features(self, df):
         df = df.withColumn('transaction_hour', hour(col('timestamp'))) # hour the transaction occurred
+
         df = df.withColumn('is_weekend', 
                         ((dayofweek(col('timestamp')) == 1) | (dayofweek(col('timestamp')) == 7)).cast('int')) # flag whether the tranaction happend on a weekend or not 
+        
         df = df.withColumn('is_night',
                            (((hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int'))) # whehter the transaction happen overnight (between 10PM and 5AM)
+        
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
+
         df = self.get_user_activity_24h(df) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
         df = self.amount_to_avg_ratio(df) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
         
@@ -236,7 +240,7 @@ class FraudDetectionInference:
         runs = client.search_runs(
             experiment_ids = [experiment.experiment_id],
             filter_string = "attributes.status = 'FINISHED'",
-            order_by = ["attributes.start_time DESC"], # sort so the newest run comes first and limit result to 1 so we get the most recent run
+            order_by = ["start_time DESC"], # sort so the newest run comes first and limit result to 1 so we get the most recent run
             max_results = 1
         )
 
@@ -260,7 +264,9 @@ class FraudDetectionInference:
     # function to run infernence on the model so it is trained on new data that comes in 
     def run_inference(self):
         df = self.read_from_kafka()
+        logger.info(f"Successfully read data from Kafka topic: {self.config['kafka']['topic']}")
         df = self.add_features(df)
+        logger.info("Successfully added features to dataframe")
 
         broadcast_model = self.broadcast_model
 
@@ -323,7 +329,7 @@ class FraudDetectionInference:
         # only filter for fraud predictions that are flagged as fraudulent
         fraud_predictions = prediction_df.filter(col('prediction') == 1)
         fraud_predictions.selectExpr(
-            "CAST(transaction_id as BINARY) AS key",
+            "CAST(transaction_id as STRING) AS key",
             "to_json(struct(*)) as value"
         ).writeStream \
         .format('kafka') \
