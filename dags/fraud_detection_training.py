@@ -222,7 +222,6 @@ class FraudDetectionTraining:
             lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
         )
 
-
         # find the average time between past transactions per user
         df['time_diff'] = df.groupby('user_id')['timestamp'].diff().dt.total_seconds()
 

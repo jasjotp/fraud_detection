@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
                               IntegerType, DoubleType, TimestampType)
 from pyspark.sql.functions import (from_json, col, hour, dayofmonth,
-                                  dayofweek, when, lit, coalesce)
+                                  dayofweek, when, lit, coalesce, window)
 from dotenv import load_dotenv
 import yaml
 import json
@@ -132,6 +132,51 @@ class FraudDetectionInference:
         # return the parsed and streamed data 
         return parsed_df 
     
+    def get_user_activity_24h(self, df):
+        '''
+        Finds the number of transactions made by each user in the past 24 hours using a sliding window.
+        Applies a 25-hour watermark on the event time column to allow Spark to handle late-arriving data
+        and safely manage state. Groups events by user_id and a 24-hour window that slides every minute,
+        then counts the number of events per user in each window and renames the count column to 'user_activity_24h'
+        '''
+        # set the data that is to be streamed to be able to be up to 25 hours late, so Spark waits 25 hours (an extra hour after the 24 hour rolling window) for late data, so no data older than the max event time - 25 hours arrives anymore
+        df_with_watermark = df.withWatermark('timestamp', '25 hours')
+
+        # group by the 24-hour sliding window + user_id
+        user_activity_24h = (
+            df_with_watermark
+            .groupBy(
+                window(col('timestamp'), '24 hours', '1 minute'),
+                col('user_id'))
+            .count()
+            .withColumnRenamed('count', 'user_activity_24h')
+        )
+
+        # join back with the main data on user_id and timestamp falling into the same window (start date of window <= timestamp and end date of window > timestamp)
+        combined_df = (
+            df.join(
+                user_activity_24h, 
+                on = ((col('df.user_id') == col('user_activity_24h.user_id')) &
+                     (col('df.timestamp') >= col('user_activity_24h.window.start')) &
+                     (col('df.timestamp') < col('user_activity_24h.window.end'))),
+                how = 'left'
+            )
+            .drop('user_activity_24h.user_id')
+            .drop('window')
+        )
+
+        return combined_df
+
+    # function to add features into the dataframe 
+    def add_features(self, df):
+        df = df.withColumn('transaction_hour', hour(col('timestamp'))) # hour the transaction occurred
+        df = df.withColumn('is_weekend', 
+                        ((dayofweek(col('timestamp')) == 1) | (dayofweek(col('timestamp')) == 7)).cast('int')) # flag whether the tranaction happend on a weekend or not 
+        df = df.withColumn('is_night',
+                           (hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int') # whehter the transaction happen overnight (between 10PM and 5AM)
+        df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
+        df = self.get_user_activity_24h(df) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
+
     # function to run infernence on the model so it is trained on new data that comes in 
     def run_inference(self):
         df = self.read_from_kafka()
