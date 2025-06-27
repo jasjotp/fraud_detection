@@ -55,7 +55,7 @@ class FraudDetectionInference:
     @staticmethod
     def load_config(config_path):
         try:
-            with open(config_path, 'r') as f:
+            with open(config_path, 'rb') as f:
                 return yaml.safe_load(f)
         except Exception as e:
             logger.error(f'Error loading the config file: {e}')
@@ -201,7 +201,7 @@ class FraudDetectionInference:
         df = df.withColumn('is_weekend', 
                         ((dayofweek(col('timestamp')) == 1) | (dayofweek(col('timestamp')) == 7)).cast('int')) # flag whether the tranaction happend on a weekend or not 
         df = df.withColumn('is_night',
-                           (hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int') # whehter the transaction happen overnight (between 10PM and 5AM)
+                           (((hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int'))) # whehter the transaction happen overnight (between 10PM and 5AM)
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
         df = self.get_user_activity_24h(df) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
         df = self.amount_to_avg_ratio(df) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
@@ -273,10 +273,11 @@ class FraudDetectionInference:
                 currency: pd.Series, 
                 transaction_hour: pd.Series,
                 is_weekend: pd.Series,
-                in_night: pd.Series,
+                is_night: pd.Series,
                 time_since_last_txn: pd.Series,
                 transaction_day: pd.Series,
                 merchant_risk: pd.Series,
+                user_activity_24h: pd.Series,
                 amount_to_avg_ratio: pd.Series
         ) -> pd.Series:
             # list out the schema that we want to predict on, as a pandas df
@@ -287,10 +288,11 @@ class FraudDetectionInference:
                 'currency': currency,
                 'transaction_hour': transaction_hour,
                 'is_weekend': is_weekend,
-                'in_night': in_night,
+                'is_night': is_night,
                 'time_since_last_txn': time_since_last_txn,
                 'transaction_day': transaction_day,
                 'merchant_risk': merchant_risk,
+                'user_activity_24h': user_activity_24h,
                 'amount_to_avg_ratio': amount_to_avg_ratio
             })
 
