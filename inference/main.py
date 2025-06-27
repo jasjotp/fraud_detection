@@ -1,11 +1,13 @@
 import os 
 import logging
 import pickle 
+import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
                               IntegerType, DoubleType, TimestampType)
-from pyspark.sql.functions import (from_json, col, hour, dayofmonth,
-                                  dayofweek, when, lit, coalesce, window)
+from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf, PandasUDFType,
+                                  dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag)
+from pyspark.sql.window import Window
 from dotenv import load_dotenv
 import yaml
 import json
@@ -132,6 +134,7 @@ class FraudDetectionInference:
         # return the parsed and streamed data 
         return parsed_df 
     
+    # function to find rolling 24-hour user activity
     def get_user_activity_24h(self, df):
         '''
         Finds the number of transactions made by each user in the past 24 hours using a sliding window.
@@ -167,6 +170,31 @@ class FraudDetectionInference:
 
         return combined_df
 
+    # function to get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
+    def amount_to_avg_ratio(self, df):
+        '''
+        Adds a column amount_to_avg_ratio to the df that is the curent transaction amount dividied by the 
+        mean amount of the last 6 transactions (excluding the current one) per user, ordered by timestamp
+        to see if the current amount is a large amount compared to past transactions. If the user has no
+        transactions, the ratio defaults to 1.0
+        '''
+        # window that includes the 6 rows before the current one 
+        prev_6_transactions = (
+            Window
+            .partitionBy('user_id')
+            .orderBy('timestamp')
+            .rowsBetween(-6, -1) # include the 6 rows before the current row up until 1 row before the current row (0 - 1)
+        )
+
+        # make a column in the df that contains the avg amount of the last 6 transactions
+        df = df.withColumn('avg_amount_prev_6_txns', avg(col('amount')).over(prev_6_transactions))
+
+        # create a column that contains the ratio for the current amount compared to the avg amount of the last 6 transactions
+        df = df.withColumn('amount_to_avg_ratio', 
+                           col('amount') / col('avg_amount_prev_6_txns')
+                           ).fillna({'amount_to_avg_ratio': 1.0})
+        return df.drop('avg_amount_prev_6_txns')
+
     # function to add features into the dataframe 
     def add_features(self, df):
         df = df.withColumn('transaction_hour', hour(col('timestamp'))) # hour the transaction occurred
@@ -176,11 +204,65 @@ class FraudDetectionInference:
                            (hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int') # whehter the transaction happen overnight (between 10PM and 5AM)
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
         df = self.get_user_activity_24h(df) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
+        df = self.amount_to_avg_ratio(df) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
+        
+        # create a feaure that flags whether the merchant is a high risk merchant or not 
+        high_risk_merchants = self.config.get('high_risk_merchants', ['QuickCash', 'GlobalDigital', 'FastMoneyX'])
+        df = df.withColumn('merchant_risk',
+                           when(col('merchant').isin(high_risk_merchants), lit(1)).otherwise(lit(0)))
 
+        # feature to find the time elaspsed since the last transaction per user (in seconds)
+        win = Window.partitionBy('user_id').orderBy('timestamp')
+
+        # calculate previous timestamp for each user's transaction
+        df = df.withColumn('prev_timestamp', lag('timestamp').over(win))
+
+        # subtract the current transactions timestamp with the previous timestamp for the user to find each transaction/user's time since last transaction (in seconds)
+        df = df.withColumn('time_since_last_txn',
+                           (unix_timestamp('timestamp') - unix_timestamp('prev_timestamp')).cast('double')
+                        ).fillna({'time_since_last_txn': 0.0}).drop('prev_timestamp')
+        return df 
+    
     # function to run infernence on the model so it is trained on new data that comes in 
     def run_inference(self):
         df = self.read_from_kafka()
         df = self.add_features(df)
+
+        broadcast_model = self.broadcast_model
+
+        # create a udf function to predict the value (0/1) of the transaction
+        @pandas_udf('int', PandasUDFType.SCALAR)
+        def predict_udf(
+                user_id, 
+                amount, 
+                merchant, 
+                currency, 
+                transaction_hour,
+                is_weekend,
+                in_night,
+                time_since_last_txn,
+                transaction_day,
+                merchant_risk,
+                amount_to_avg_ratio
+        ) -> pd.Series:
+            pass
+
+        prediction_df = df.withColumn('prediction',
+                                    predict_udf(
+                                        col('user_id'),
+                                        col('amount'),
+                                        col('merchant'),
+                                        col('currency'),
+                                        col('transaction_hour'),
+                                        col('is_weekend'),
+                                        col('is_night'),
+                                        col('time_since_last_txn'),
+                                        col('transaction_day'),
+                                        col('merchant_risk'),
+                                        col('user_activity_24h'),
+                                        col('amount_to_avg_ratio')
+                                    ))
+
 
 if __name__ == "__main__":
     inference = FraudDetectionInference(config_path = '/app/config.yaml')

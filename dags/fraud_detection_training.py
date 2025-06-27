@@ -272,9 +272,13 @@ class FraudDetectionTraining:
         df['txn_count_last_5min'].fillna(0, inplace = True)
         
         # extract monetary features
-        # extract the last transaction amount, as compared to the avererage amount of the last 7 days
-        df['amount_to_avg_ratio'] = df.groupby('user_id', group_keys = False).apply(
-            lambda g: (g['amount'] / g['amount'].rolling(7, min_periods = 1).mean()).fillna(1.0)
+        
+        # extract the last transaction amount, as compared to the avererage amount of the last 6 transactions (not including the current one)
+        df['amount_to_avg_ratio'] = (
+            df.groupby('user_id')['amount']
+            .apply(lambda g: g / g.shift(1).rolling(7, min_periods = 1).mean())
+            .reset_index(level = 0, drop = True)
+            .fillna(1.0)
         )
 
         # extract the rolling standard deviation for each user for their last 10 tramsactions
@@ -283,14 +287,6 @@ class FraudDetectionTraining:
             .transform(lambda x: x.rolling(window = 10, min_periods = 2).std())
         )
         df['user_transaction_amount_std'].fillna(df['user_transaction_amount_std'].median(), inplace = True)
-
-        # extract the last transaction amount, as compared to the avererage amount of the last 7 transactions
-        df['amount_to_avg_ratio'] = (
-            df.groupby('user_id')['amount']
-            .apply(lambda g: g / g.rolling(7, min_periods = 1).mean())
-            .reset_index(level = 0, drop = True)
-            .fillna(1.0)
-        )
 
         # extract the average amount spent by each user in the last 7 days 
         amount_7d_avg = (
