@@ -3,3 +3,4 @@ faker
 jsonschema
 confluent_kafka
 numpy
+mlflow

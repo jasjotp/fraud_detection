@@ -9,6 +9,8 @@ from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf,
                                   dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag)
 from pyspark.sql.window import Window
 from dotenv import load_dotenv
+from mlflow.tracking import MlflowClient
+import mlflow
 import yaml
 import json
 
@@ -223,6 +225,40 @@ class FraudDetectionInference:
                         ).fillna({'time_since_last_txn': 0.0}).drop('prev_timestamp')
         return df 
     
+    # helper function to get the most recent thereshold for the most recent run in MLFlow
+    def get_threshold(self, experiment_name: str) -> float:
+        client = MlflowClient()
+        experiment = client.get_experiment_by_name(experiment_name)
+        
+        # if there is no experiemnt name matching the parameter passed in, raise an error 
+        if not experiment:
+            raise ValueError(f'Experiment: {experiment_name} not found')
+
+        # retrieve the most recently completed run 
+        runs = client.search_runs(
+            experiment_ids = [experiment.experiment_id],
+            filter_string = "attributes.status = 'FINISHED'",
+            order_by = ["attributes.start_time DESC"], # sort so the newest run comes first and limit result to 1 so we get the most recent run
+            max_results = 1
+        )
+
+        # if there are no completed runs found, raise an error 
+        if not runs:
+            raise ValueError('No completed runs found in experiment')
+        
+        latest_run = runs[0]
+
+        # try to get a threshold from metrics first, then fallback to params
+        if 'threshold' in latest_run.data.metrics:
+            return float(latest_run.data.metrics['threshold'])
+        
+        full_run = client.get_run(latest_run.info.run_id)
+        threshold = full_run.data.params.get('threshold')
+        if threshold is None:
+            raise ValueError('Threshold not found in the latest run')
+        
+        return float(threshold)
+
     # function to run infernence on the model so it is trained on new data that comes in 
     def run_inference(self):
         df = self.read_from_kafka()
@@ -233,20 +269,41 @@ class FraudDetectionInference:
         # create a udf function to predict the value (0/1) of the transaction
         @pandas_udf('int', PandasUDFType.SCALAR)
         def predict_udf(
-                user_id, 
-                amount, 
-                merchant, 
-                currency, 
-                transaction_hour,
-                is_weekend,
-                in_night,
-                time_since_last_txn,
-                transaction_day,
-                merchant_risk,
-                amount_to_avg_ratio
+                user_id: pd.Series, 
+                amount: pd.Series, 
+                merchant: pd.Series, 
+                currency: pd.Series, 
+                transaction_hour: pd.Series,
+                is_weekend: pd.Series,
+                in_night: pd.Series,
+                time_since_last_txn: pd.Series,
+                transaction_day: pd.Series,
+                merchant_risk: pd.Series,
+                amount_to_avg_ratio: pd.Series
         ) -> pd.Series:
-            pass
+            # list out the schema that we want to predict on, as a pandas df
+            input_df = pd.DataFrame({
+                'user_id': user_id,
+                'amount': amount,
+                'merchant': merchant,
+                'currency': currency,
+                'transaction_hour': transaction_hour,
+                'is_weekend': is_weekend,
+                'in_night': in_night,
+                'time_since_last_txn': time_since_last_txn,
+                'transaction_day': transaction_day,
+                'merchant_risk': merchant_risk,
+                'amount_to_avg_ratio': amount_to_avg_ratio
+            })
 
+            # get probabilities of the fraud cases 
+            prob = broadcast_model.value.predict_proba(input_df)[:, 1]
+            threshold = self.get_threshold(experiment_name = 'fraud_detection_')
+            predictions = (prob >= threshold).astype(int)
+
+            return pd.Series(predictions)
+        
+        # predict on the new transactions that come in
         prediction_df = df.withColumn('prediction',
                                     predict_udf(
                                         col('user_id'),
@@ -263,6 +320,22 @@ class FraudDetectionInference:
                                         col('amount_to_avg_ratio')
                                     ))
 
+        # only filter for fraud predictions that are flagged as fraudulent
+        fraud_predictions = prediction_df.filter(col('prediction') == 1)
+        fraud_predictions.selectExpr(
+            "CAST(transaction_id as BINARY) AS key",
+            "to_json(struct(*)) as value"
+        ).writeStream \
+        .format('kafka') \
+        .option('kafka.bootstrap.servers', self.bootstrap_servers) \
+        .option('topic', 'fraud_predictions') \
+        .option('kafka.security.protocol', self.security_protocol) \
+        .option('kafka.sasl.mechanism', self.sasl_mechanism) \
+        .option('kafka.sasl.jaas.config', self.sasl_jaas_config) \
+        .option('checkpointLocation', 'checkpoints/fraud_predictions') \
+        .outputMode('update') \
+        .start() \
+        .awaitTermination()
 
 if __name__ == "__main__":
     inference = FraudDetectionInference(config_path = '/app/config.yaml')
