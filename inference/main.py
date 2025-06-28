@@ -38,6 +38,9 @@ class FraudDetectionInference:
         self.spark = self.init_spark_session()
         self.model = self.load_model(self.config['model']['path'])
         self.broadcast_model = self.spark.sparkContext.broadcast(self.model)
+        tracking_uri = self.config["mlflow"]["tracking_uri"]  
+        mlflow.set_tracking_uri(tracking_uri)
+        self.mlflow_client = MlflowClient(tracking_uri = tracking_uri)
         logger.debug(f'Environment variables loaded: {dict(os.environ)}')
 
     # function that loads the model 
@@ -234,12 +237,16 @@ class FraudDetectionInference:
     
     # helper function to get the most recent thereshold for the most recent run in MLFlow
     def get_threshold(self, experiment_name: str) -> float:
-        client = MlflowClient()
+        client = self.mlflow_client
         experiment = client.get_experiment_by_name(experiment_name)
         
         # if there is no experiemnt name matching the parameter passed in, raise an error 
-        if not experiment:
-            raise ValueError(f'Experiment: {experiment_name} not found')
+        if experiment is None:
+            all_names = [exp.name for exp in client.search_experiments()]
+            raise ValueError(
+                f'Experiment: {experiment_name} not found on {client.tracking_uri}. '
+                f'Available Experiments: {all_names}'
+                )
 
         # retrieve the most recently completed run 
         runs = client.search_runs(
