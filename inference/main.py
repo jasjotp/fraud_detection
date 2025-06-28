@@ -1,6 +1,6 @@
 import os 
 import logging
-import pickle 
+import joblib
 import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
@@ -43,13 +43,13 @@ class FraudDetectionInference:
     # function that loads the model 
     def load_model(self, model_path):
         try:
-            # try to open the model path 
-            with open(model_path, 'rb') as f:
-                model = pickle.load(f)
-                logger.info(f'Model loaded from: {model_path}')
-                return model
+            # try to load the model path 
+            model = joblib.load(model_path)
+            logger.info(f'Model loaded from: {model_path}')
+            return model
         except Exception as e:
-            logger.error('Error loading model: {e}')
+            logger.error(f'Error loading model: {e}', exc_info = True)
+            raise
 
     # function to load config for Kafka 
     @staticmethod
@@ -64,10 +64,12 @@ class FraudDetectionInference:
     # function to initialize the Spark Session 
     def init_spark_session(self):
         try:
+            builder = SparkSession.builder.appName(self.config.get('spark', {}).get('app_name', 'FraudDetectionInference'))
+
             packages = self.config.get('spark', {}).get('packages', '')
             if packages:
-                builder = SparkSession.builder.appName(self.config.get('spark').get('app_name', 'FraudDetectionInference'))
                 builder = builder.config('spark.jars.packages', packages)
+
             spark = builder.getOrCreate()
             logger.info('Spark session initialized')
             return spark
@@ -156,16 +158,19 @@ class FraudDetectionInference:
         )
 
         # join back with the main data on user_id and timestamp falling into the same window (start date of window <= timestamp and end date of window > timestamp)
+        transactions = df.alias('txns')
+        activity = user_activity_24h.alias('a')
+
         combined_df = (
-            df.join(
-                user_activity_24h, 
-                on = ((col('df.user_id') == col('user_activity_24h.user_id')) &
-                     (col('df.timestamp') >= col('user_activity_24h.window.start')) &
-                     (col('df.timestamp') < col('user_activity_24h.window.end'))),
+            transactions.join(
+                activity, 
+                (transactions.user_id == activity.user_id) &
+                    (transactions.timestamp >= activity.window.start) &
+                    (transactions.timestamp < activity.window.end),
                 how = 'left'
             )
-            .drop('user_activity_24h.user_id')
-            .drop('window')
+            .drop(activity.user_id)
+            .drop(activity.window)
         )
 
         return combined_df
@@ -203,7 +208,7 @@ class FraudDetectionInference:
                         ((dayofweek(col('timestamp')) == 1) | (dayofweek(col('timestamp')) == 7)).cast('int')) # flag whether the tranaction happend on a weekend or not 
         
         df = df.withColumn('is_night',
-                           (((hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int'))) # whehter the transaction happen overnight (between 10PM and 5AM)
+                           ((hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int')) # whehter the transaction happen overnight (between 10PM and 5AM)
         
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
 
@@ -269,6 +274,7 @@ class FraudDetectionInference:
         logger.info("Successfully added features to dataframe")
 
         broadcast_model = self.broadcast_model
+        threshold = self.get_threshold(experiment_name = 'fraud_detection_')
 
         # create a udf function to predict the value (0/1) of the transaction
         @pandas_udf('int', PandasUDFType.SCALAR)
@@ -304,7 +310,6 @@ class FraudDetectionInference:
 
             # get probabilities of the fraud cases 
             prob = broadcast_model.value.predict_proba(input_df)[:, 1]
-            threshold = self.get_threshold(experiment_name = 'fraud_detection_')
             predictions = (prob >= threshold).astype(int)
 
             return pd.Series(predictions)

@@ -7,3 +7,4 @@ googleapis-common-protos>=1.56.2
 imblearn
 scikit-learn
 dill
+joblib
