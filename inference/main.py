@@ -145,35 +145,36 @@ class FraudDetectionInference:
         Finds the number of transactions made by each user in the past 24 hours using a sliding window.
         Applies a 25-hour watermark on the event time column to allow Spark to handle late-arriving data
         and safely manage state. Groups events by user_id and a 24-hour window that slides every minute,
-        then counts the number of events per user in each window and renames the count column to 'user_activity_24h'
+        then counts the number of events per user in each window and renames the count column to 'user_activity_24h'. 
+        Implementation follows the “window-equality join” pattern required for stream-stream outer joins.
         '''
-        # set the data that is to be streamed to be able to be up to 25 hours late, so Spark waits 25 hours (an extra hour after the 24 hour rolling window) for late data, so no data older than the max event time - 25 hours arrives anymore
+        # set the raw event data that is to be streamed to be able to be up to 25 hours late, so Spark waits 25 hours (an extra hour after the 24 hour rolling window) for late data, so no data older than the max event time - 25 hours arrives anymore
         df_with_watermark = df.withWatermark('timestamp', '25 hours')
 
-        # group by the 24-hour sliding window + user_id
+        # add a 24 hour, 1 minute sliding window column so you can count transactions in past
+        # 24 hours per user
+        with_window = df_with_watermark.withColumn(
+            'tnx_window',
+            window(col('timestamp'), '24 hours', '1 minute')
+        )
+
+        # group by the 24-hour sliding window + user_id to get each users activity count in the last 24h
         user_activity_24h = (
-            df_with_watermark
-            .groupBy(
-                window(col('timestamp'), '24 hours', '1 minute'),
-                col('user_id'))
+            with_window
+            .groupBy('txn_window', 'user_id')
             .count()
             .withColumnRenamed('count', 'user_activity_24h')
         )
 
         # join back with the main data on user_id and timestamp falling into the same window (start date of window <= timestamp and end date of window > timestamp)
-        transactions = df.alias('txns')
-        activity = user_activity_24h.alias('a')
-
         combined_df = (
-            transactions.join(
-                activity, 
-                (transactions.user_id == activity.user_id) &
-                    (transactions.timestamp >= activity.window.start) &
-                    (transactions.timestamp < activity.window.end),
-                how = 'left'
+            with_window.alias('tx')
+            .join(
+                user_activity_24h.alias('a'), 
+                on = ['txn_window', 'user_id'],
+                how = 'leftOuter'
             )
-            .drop(activity.user_id)
-            .drop(activity.window)
+            .drop('txn_window')
         )
 
         return combined_df
@@ -351,7 +352,7 @@ class FraudDetectionInference:
         .option('kafka.sasl.mechanism', self.sasl_mechanism) \
         .option('kafka.sasl.jaas.config', self.sasl_jaas_config) \
         .option('checkpointLocation', 'checkpoints/fraud_predictions') \
-        .outputMode('update') \
+        .outputMode('append') \
         .start() \
         .awaitTermination()
 
