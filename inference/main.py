@@ -154,13 +154,14 @@ class FraudDetectionInference:
         # add a 24 hour, 1 minute sliding window column so you can count transactions in past
         # 24 hours per user
         with_window = df_with_watermark.withColumn(
-            'tnx_window',
+            'txn_window',
             window(col('timestamp'), '24 hours', '1 minute')
         )
 
         # group by the 24-hour sliding window + user_id to get each users activity count in the last 24h
         user_activity_24h = (
             with_window
+            .withWatermark('timestamp', '25 hours')
             .groupBy('txn_window', 'user_id')
             .count()
             .withColumnRenamed('count', 'user_activity_24h')
@@ -172,9 +173,10 @@ class FraudDetectionInference:
             .join(
                 user_activity_24h.alias('a'), 
                 on = ['txn_window', 'user_id'],
-                how = 'leftOuter'
+                how = 'left_outer'
             )
             .drop('txn_window')
+            .fillna({'user_activity_24h': 0})
         )
 
         return combined_df
@@ -352,7 +354,7 @@ class FraudDetectionInference:
         .option('kafka.sasl.mechanism', self.sasl_mechanism) \
         .option('kafka.sasl.jaas.config', self.sasl_jaas_config) \
         .option('checkpointLocation', 'checkpoints/fraud_predictions') \
-        .outputMode('append') \
+        .outputMode('update') \
         .start() \
         .awaitTermination()
 
