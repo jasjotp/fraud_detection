@@ -6,7 +6,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
                               IntegerType, DoubleType, TimestampType)
 from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf, PandasUDFType,
-                                  dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag)
+                                  dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag, count)
 from pyspark.sql.window import Window
 from dotenv import load_dotenv
 import mlflow
@@ -146,40 +146,22 @@ class FraudDetectionInference:
         Applies a 25-hour watermark on the event time column to allow Spark to handle late-arriving data
         and safely manage state. Groups events by user_id and a 24-hour window that slides every minute,
         then counts the number of events per user in each window and renames the count column to 'user_activity_24h'. 
-        Implementation follows the “window-equality join” pattern required for stream-stream outer joins.
         '''
         # set the raw event data that is to be streamed to be able to be up to 25 hours late, so Spark waits 25 hours (an extra hour after the 24 hour rolling window) for late data, so no data older than the max event time - 25 hours arrives anymore
-        df_with_watermark = df.withWatermark('timestamp', '25 hours')
-
-        # add a 24 hour, 1 minute sliding window column so you can count transactions in past
-        # 24 hours per user
-        with_window = df_with_watermark.withColumn(
-            'txn_window',
-            window(col('timestamp'), '24 hours', '1 minute')
-        )
+        #df_with_watermark = df.withWatermark('timestamp', '25 hours')      
 
         # group by the 24-hour sliding window + user_id to get each users activity count in the last 24h
         user_activity_24h = (
-            with_window
+            df
             .withWatermark('timestamp', '25 hours')
-            .groupBy('txn_window', 'user_id')
-            .count()
-            .withColumnRenamed('count', 'user_activity_24h')
-        )
-
-        # join back with the main data on user_id and timestamp falling into the same window (start date of window <= timestamp and end date of window > timestamp)
-        combined_df = (
-            with_window.alias('tx')
-            .join(
-                user_activity_24h.alias('a'), 
-                on = ['txn_window', 'user_id'],
-                how = 'left_outer'
+            .groupBy(
+                window(col('timestamp'), '24 hours', '1 minute'),
+                col('user_id')
             )
-            .drop('txn_window')
-            .fillna({'user_activity_24h': 0})
+            .agg(count('*').alias('user_activity_24h'))
         )
 
-        return combined_df
+        return user_activity_24h
 
     # function to get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
     def amount_to_avg_ratio(self, df):
