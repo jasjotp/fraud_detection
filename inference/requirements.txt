@@ -8,3 +8,4 @@ imblearn
 scikit-learn
 dill
 joblib
+redis

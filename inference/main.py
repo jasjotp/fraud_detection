@@ -4,11 +4,12 @@ import joblib
 import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
-                              IntegerType, DoubleType, TimestampType)
-from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf, PandasUDFType,
-                                  dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag, count)
+                              IntegerType, DoubleType, TimestampType, LongType)
+from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf, PandasUDFType, udf, dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag, count)
 from pyspark.sql.window import Window
+from redis import Redis
 from dotenv import load_dotenv
+from functools import lru_cache
 import mlflow
 from mlflow.tracking import MlflowClient
 import yaml
@@ -20,6 +21,21 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+# function to connect to Redis lazily, as we cache the connection 
+@lru_cache(maxsize = 1)
+def get_redis_connection():
+    return Redis(host = 'redis', port = 6379, decode_responses = True)
+
+# function that is a UDF that reads the latest value (user activity per user in the last 24 hours)
+@udf(returnType = LongType())
+def redis_activitiy_udf(user_id):
+    '''
+    uses a per row lookup and the cached Redis connection to get the user id and their number of transactions in last 24 hours and returns a 0 if the key is not present
+    '''
+    redis = get_redis_connection()
+    val = redis.get(f'user:{user_id}:activity24h')
+    return int(val) if val is not None else 0
 
 # class for the inference to use our model to predict on new data in real time coming in from Kafka
 class FraudDetectionInference:
@@ -142,26 +158,26 @@ class FraudDetectionInference:
     # function to find rolling 24-hour user activity
     def get_user_activity_24h(self, df):
         '''
-        Finds the number of transactions made by each user in the past 24 hours using a sliding window.
-        Applies a 25-hour watermark on the event time column to allow Spark to handle late-arriving data
-        and safely manage state. Groups events by user_id and a 24-hour window that slides every minute,
-        then counts the number of events per user in each window and renames the count column to 'user_activity_24h'. 
+        Returns a streaming DF with columns
+        window, user_id, user_activity_24h
+        (24 h window sliding every minute).
         '''
         # set the raw event data that is to be streamed to be able to be up to 25 hours late, so Spark waits 25 hours (an extra hour after the 24 hour rolling window) for late data, so no data older than the max event time - 25 hours arrives anymore
-        #df_with_watermark = df.withWatermark('timestamp', '25 hours')      
-
-        # group by the 24-hour sliding window + user_id to get each users activity count in the last 24h
-        user_activity_24h = (
-            df
-            .withWatermark('timestamp', '25 hours')
+        return (
+            df.withWatermark('timestamp', '25 hours')
             .groupBy(
                 window(col('timestamp'), '24 hours', '1 minute'),
                 col('user_id')
             )
             .agg(count('*').alias('user_activity_24h'))
         )
+    
+    # function to send the user_id: user_activity_24h key value aggregation to Redis for storage
+    def write_activity_to_redis(self, batch_df, _):
+        redis_conn = get_redis_connection()
 
-        return user_activity_24h
+        for row in batch_df.select('user_id', 'user_activity_24h').distinct().collect():
+            redis_conn.set(f"user:{row['user_id']}:activity24h", row['user_activity_24h'])
 
     # function to get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
     def amount_to_avg_ratio(self, df):
@@ -200,7 +216,7 @@ class FraudDetectionInference:
         
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
 
-        df = self.get_user_activity_24h(df) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
+        df = df.withColumn('user_activity_24h', redis_activitiy_udf(col('user_id'))) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
         df = self.amount_to_avg_ratio(df) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
         
         # create a feaure that flags whether the merchant is a high risk merchant or not 
@@ -260,7 +276,21 @@ class FraudDetectionInference:
 
     # function to run infernence on the model so it is trained on new data that comes in 
     def run_inference(self):
+
         df = self.read_from_kafka()
+
+        # launch side pipeline that ONLY maintains user_activity_24h
+        user_activity_24h_df = self.get_user_activity_24h(df)
+
+        self.activity_query = (
+            user_activity_24h_df.writeStream
+            .outputMode('update')
+            .foreachBatch(self.write_activity_to_redis)
+            .queryName("write_user_activity_to_redis")
+            .option("checkpointLocation", "checkpoints/activity_to_redis")
+            .start()
+        )
+        
         logger.info(f"Successfully read data from Kafka topic: {self.config['kafka']['topic']}")
         df = self.add_features(df)
         logger.info("Successfully added features to dataframe")
