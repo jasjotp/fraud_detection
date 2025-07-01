@@ -9,66 +9,17 @@ from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf,
 from pyspark.sql.window import Window
 from redis import Redis
 from dotenv import load_dotenv
-from functools import lru_cache
 import mlflow
 from mlflow.tracking import MlflowClient
 import yaml
 import json
-
+from redis_utils import (get_redis_connection, redis_activity_udf, get_amount_to_avg_ratio_redis, time_since_last_txn_redis)
 logging.basicConfig(
     level = logging.INFO,
     format = '%(asctime)s [%(levelname)s] %(message)s'
 )
 
 logger = logging.getLogger(__name__)
-
-# function to connect to Redis lazily, as we cache the connection 
-@lru_cache(maxsize = 1)
-def get_redis_connection():
-    return Redis(host = 'redis', port = 6379, decode_responses = True)
-
-# function that is a UDF that reads the latest value (user activity per user in the last 24 hours)
-@udf(returnType = LongType())
-def redis_activitiy_udf(user_id):
-    '''
-    uses a per row lookup and the cached Redis connection to get the user id and their number of transactions in last 24 hours and returns a 0 if the key is not present
-    '''
-    redis = get_redis_connection()
-    val = redis.get(f'user:{user_id}:activity24h')
-    return int(val) if val is not None else 0
-
-# function that is a UDF and computes the average of the last 6 transactions, and returns the ratio of current amount to average of last 6 transactions (excluding current transaction)
-@udf(returnType = DoubleType())
-def get_amount_to_avg_ratio_redis(user_id, amount):
-    redis = get_redis_connection()
-    key = f'user:{user_id}:recent_amounts'
-
-    # fetch the previous 6 amounts (excluding current amount)
-    prev_6_amounts = redis.lrange(key, 0, 5)
-    prev_6_amounts = [float (x) for x in prev_6_amounts if x.replace('.', '', 1).isdigit()]
-
-    # push the current amount to the start of the list 
-    redis.lpush(key, str(amount))
-
-    # trim the list to only keep the latest 6 transactions 
-    redis.ltrim(key, 0, 5)
-
-    if len(prev_6_amounts) == 0:
-        return 1.0 # default ratio if a user has no previous transactions 
-
-    avg = sum(prev_6_amounts) / len(prev_6_amounts)
-    return float(amount) / avg if avg != 0 else 1.0
-
-# UDF function that pulls the time since the last transaction from Redis 
-@udf(returnType = DoubleType())
-def time_since_last_txn_redis(user_id, curr_ts):
-    r = get_redis_connection()
-    prev = r.get(f'user:{user_id}:last_ts')
-    r.set(f'user:{user_id}:last_ts', str(curr_ts.timestamp()))
-    if prev is None:
-        return 0.0 
-    
-    return curr_ts.timestamp() - float(prev)
 
 # class for the inference to use our model to predict on new data in real time coming in from Kafka
 class FraudDetectionInference:
@@ -232,7 +183,7 @@ class FraudDetectionInference:
         
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
 
-        df = df.withColumn('user_activity_24h', redis_activitiy_udf(col('user_id'))) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
+        df = df.withColumn('user_activity_24h', redis_activity_udf(col('user_id'))) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
         df = df.withColumn('amount_to_avg_ratio', get_amount_to_avg_ratio_redis(col('user_id'), col('amount'))) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
         
         # create a feaure that flags whether the merchant is a high risk merchant or not 
@@ -288,7 +239,7 @@ class FraudDetectionInference:
 
         df = self.read_from_kafka()
 
-        # launch side pipeline that ONLY maintains user_activity_24h and writes the updated actiivty per user to Kafka
+        # launch side pipeline that maintains user_activity_24h and writes the updated actiivty per user to Kafka
         user_activity_24h_df = self.get_user_activity_24h(df)
 
         self.activity_query = (
