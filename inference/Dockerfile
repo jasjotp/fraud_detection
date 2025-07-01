@@ -54,7 +54,7 @@ COPY requirements.txt .
 RUN pip install --default-timeout=100 --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY ./src/inference/ /app/
+COPY . /app/
 
 # Stage 2: Runtime stage
 FROM python:3.10.16-slim-bookworm as runtime
@@ -76,7 +76,7 @@ WORKDIR /app
 # Copy artifacts from builder
 COPY --from=builder /spark /spark
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /app/main.py .
+COPY --from=builder /app /app
 
 # Environment configuration
 ENV SPARK_HOME=/spark \
