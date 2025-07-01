@@ -37,6 +37,28 @@ def redis_activitiy_udf(user_id):
     val = redis.get(f'user:{user_id}:activity24h')
     return int(val) if val is not None else 0
 
+# function that is a UDF and computes the average of the last 6 transactions, and returns the ratio of current amount to average of last 6 transactions (excluding current transaction)
+@udf(returnType = DoubleType())
+def get_amount_to_avg_ratio_redis(user_id, amount):
+    redis = get_redis_connection()
+    key = f'user:{user_id}:recent_amounts'
+
+    # fetch the previous 6 amounts (excluding current amount)
+    prev_6_amounts = redis.lrange(key, 0, 5)
+    prev_6_amounts = [float (x) for x in prev_6_amounts if x.replace('.', '', 1).isdigit()]
+
+    # push the current amount to the start of the list 
+    redis.lpush(key, str(amount))
+
+    # trim the list to only keep the latest 6 transactions 
+    redis.ltrim(key, 0, 5)
+
+    if len(prev_6_amounts) == 0:
+        return 1.0 # default ratio if a user has no previous transactions 
+
+    avg = sum(prev_6_amounts) / len(prev_6_amounts)
+    return float(amount) / avg if avg != 0 else 1.0
+
 # class for the inference to use our model to predict on new data in real time coming in from Kafka
 class FraudDetectionInference:
     bootstrap_servers = None 
@@ -179,31 +201,6 @@ class FraudDetectionInference:
         for row in batch_df.select('user_id', 'user_activity_24h').distinct().collect():
             redis_conn.set(f"user:{row['user_id']}:activity24h", row['user_activity_24h'])
 
-    # function to get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
-    def amount_to_avg_ratio(self, df):
-        '''
-        Adds a column amount_to_avg_ratio to the df that is the curent transaction amount dividied by the 
-        mean amount of the last 6 transactions (excluding the current one) per user, ordered by timestamp
-        to see if the current amount is a large amount compared to past transactions. If the user has no
-        transactions, the ratio defaults to 1.0
-        '''
-        # window that includes the 6 rows before the current one 
-        prev_6_transactions = (
-            Window
-            .partitionBy('user_id')
-            .orderBy('timestamp')
-            .rowsBetween(-6, -1) # include the 6 rows before the current row up until 1 row before the current row (0 - 1)
-        )
-
-        # make a column in the df that contains the avg amount of the last 6 transactions
-        df = df.withColumn('avg_amount_prev_6_txns', avg(col('amount')).over(prev_6_transactions))
-
-        # create a column that contains the ratio for the current amount compared to the avg amount of the last 6 transactions
-        df = df.withColumn('amount_to_avg_ratio', 
-                           col('amount') / col('avg_amount_prev_6_txns')
-                           ).fillna({'amount_to_avg_ratio': 1.0})
-        return df.drop('avg_amount_prev_6_txns')
-
     # function to add features into the dataframe 
     def add_features(self, df):
         df = df.withColumn('transaction_hour', hour(col('timestamp'))) # hour the transaction occurred
@@ -217,7 +214,7 @@ class FraudDetectionInference:
         df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
 
         df = df.withColumn('user_activity_24h', redis_activitiy_udf(col('user_id'))) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
-        df = self.amount_to_avg_ratio(df) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
+        df = df.withColumn('amount_to_avg_ratio', get_amount_to_avg_ratio_redis(col('user_id'), col('amount'))) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
         
         # create a feaure that flags whether the merchant is a high risk merchant or not 
         high_risk_merchants = self.config.get('high_risk_merchants', ['QuickCash', 'GlobalDigital', 'FastMoneyX'])
