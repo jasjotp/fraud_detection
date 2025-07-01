@@ -54,7 +54,7 @@ COPY requirements.txt .
 RUN pip install --default-timeout=100 --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY main.py .
+COPY ./src/inference/ /app/
 
 # Stage 2: Runtime stage
 FROM python:3.10.16-slim-bookworm as runtime

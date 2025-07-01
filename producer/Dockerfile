@@ -37,7 +37,7 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 # Copy application code
-COPY ./src/inference/ /app/
+COPY . .
 
 # Entrypoint
 ENTRYPOINT ["python3", "main.py"]
