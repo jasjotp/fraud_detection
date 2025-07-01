@@ -59,6 +59,17 @@ def get_amount_to_avg_ratio_redis(user_id, amount):
     avg = sum(prev_6_amounts) / len(prev_6_amounts)
     return float(amount) / avg if avg != 0 else 1.0
 
+# UDF function that pulls the time since the last transaction from Redis 
+@udf(returnType = DoubleType())
+def time_since_last_txn_redis(user_id, curr_ts):
+    r = get_redis_connection()
+    prev = r.get(f'user:{user_id}:last_ts')
+    r.set(f'user:{user_id}:last_ts', str(curr_ts.timestamp()))
+    if prev is None:
+        return 0.0 
+    
+    return curr_ts.timestamp() - float(prev)
+
 # class for the inference to use our model to predict on new data in real time coming in from Kafka
 class FraudDetectionInference:
     bootstrap_servers = None 
@@ -201,6 +212,14 @@ class FraudDetectionInference:
         for row in batch_df.select('user_id', 'user_activity_24h').distinct().collect():
             redis_conn.set(f"user:{row['user_id']}:activity24h", row['user_activity_24h'])
 
+    # function to batch wrtite each user's last timestamp to redis so we can use a UDF to find the time since the last transaction without using a Window function in Spark
+    def write_last_ts_to_redis(self, batch_df, _):
+        r = get_redis_connection()
+        for row in batch_df.select('user_id', 'timestamp').collect():
+            r.set(f"user:{row['user_id']}:last_ts", 
+                  str(row['timestamp'].timestamp())
+            )
+    
     # function to add features into the dataframe 
     def add_features(self, df):
         df = df.withColumn('transaction_hour', hour(col('timestamp'))) # hour the transaction occurred
@@ -221,16 +240,9 @@ class FraudDetectionInference:
         df = df.withColumn('merchant_risk',
                            when(col('merchant').isin(high_risk_merchants), lit(1)).otherwise(lit(0)))
 
-        # feature to find the time elaspsed since the last transaction per user (in seconds)
-        win = Window.partitionBy('user_id').orderBy('timestamp')
-
-        # calculate previous timestamp for each user's transaction
-        df = df.withColumn('prev_timestamp', lag('timestamp').over(win))
-
         # subtract the current transactions timestamp with the previous timestamp for the user to find each transaction/user's time since last transaction (in seconds)
         df = df.withColumn('time_since_last_txn',
-                           (unix_timestamp('timestamp') - unix_timestamp('prev_timestamp')).cast('double')
-                        ).fillna({'time_since_last_txn': 0.0}).drop('prev_timestamp')
+                           time_since_last_txn_redis(col('user_id'), col('timestamp')))
         return df 
     
     # helper function to get the most recent thereshold for the most recent run in MLFlow
@@ -276,7 +288,7 @@ class FraudDetectionInference:
 
         df = self.read_from_kafka()
 
-        # launch side pipeline that ONLY maintains user_activity_24h
+        # launch side pipeline that ONLY maintains user_activity_24h and writes the updated actiivty per user to Kafka
         user_activity_24h_df = self.get_user_activity_24h(df)
 
         self.activity_query = (
@@ -285,6 +297,16 @@ class FraudDetectionInference:
             .foreachBatch(self.write_activity_to_redis)
             .queryName("write_user_activity_to_redis")
             .option("checkpointLocation", "checkpoints/activity_to_redis")
+            .start()
+        )
+
+        # side pipleine that maintains the last timestamp per user and writes updated timestamps for each user to Kafka
+        (
+            df.select('user_id', 'timestamp')
+            .writeStream
+            .foreachBatch(self.write_last_ts_to_redis)
+            .outputMode('update')
+            .option("checkpointLocation", "checkpoints/last_ts_to_redis")
             .start()
         )
         
