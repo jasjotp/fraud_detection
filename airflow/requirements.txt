@@ -6,9 +6,10 @@ pyyaml
 catboost
 pyspark
 lightgbm
-imblearn
+imbalanced-learn
 pandas
 scikit-learn
 boto3
 tqdm
 tqdm-joblib
+optuna

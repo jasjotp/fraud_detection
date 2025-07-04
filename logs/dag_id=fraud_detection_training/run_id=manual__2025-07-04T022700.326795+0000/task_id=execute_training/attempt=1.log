@@ -1,0 +1,419 @@
+[2025-07-04T02:27:09.770+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-07-04T02:27:09.845+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-07-04T02:27:00.326795+00:00 [queued]>
+[2025-07-04T02:27:09.872+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-07-04T02:27:00.326795+00:00 [queued]>
+[2025-07-04T02:27:09.874+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-07-04T02:27:09.898+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-07-04 02:27:00.326795+00:00
+[2025-07-04T02:27:09.914+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'manual__2025-07-04T02:27:00.326795+00:00', '--job-id', '10', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmprnf8mshk']
+[2025-07-04T02:27:09.911+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=896) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-07-04T02:27:09.919+0000] {standard_task_runner.py:105} INFO - Job 10: Subtask execute_training
+[2025-07-04T02:27:09.920+0000] {standard_task_runner.py:72} INFO - Started process 897 to run task
+[2025-07-04T02:27:09.993+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training manual__2025-07-04T02:27:00.326795+00:00 [running]> on host 8862b69bc4b5
+[2025-07-04T02:27:10.166+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-07-04T02:27:00.326795+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-07-04T02:27:00.326795+00:00'
+[2025-07-04T02:27:10.169+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-07-04T02:27:10.221+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-07-04T02:27:22.422+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-07-04T02:27:22.440+0000] {fraud_detection_training.py:75} INFO - Configuration loaded successfully
+[2025-07-04T02:27:23.155+0000] {fraud_detection_training.py:106} INFO - Minio connection verified. Buckets: ['mlflow']
+[2025-07-04T02:27:23.470+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-07-04T02:27:23.471+0000] {fraud_detection_training.py:429} INFO - Starting model training process...
+[2025-07-04T02:27:23.471+0000] {fraud_detection_training.py:122} INFO - Connecting to Kafka Topic: transactions
+[2025-07-04T02:27:23.548+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-07-04T02:27:23.620+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:23.882+0000] {conn.py:618} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <checking_api_versions_recv> [IPv4 ('15.157.158.196', 9092)]>: Broker version identified as 2.6
+[2025-07-04T02:27:24.128+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:24.129+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-07-04T02:27:24.131+0000] {consumer.py:120} WARNING - group_id is None: disabling auto-commit.
+[2025-07-04T02:27:24.131+0000] {subscription_state.py:181} INFO - Updating subscribed topics to: ('transactions',)
+[2025-07-04T02:27:24.205+0000] {subscription_state.py:254} INFO - Updated partition assignment: [('transactions', 0), ('transactions', 1), ('transactions', 2), ('transactions', 3), ('transactions', 4), ('transactions', 5)]
+[2025-07-04T02:27:24.256+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-07-04T02:27:24.315+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-07-04T02:27:24.382+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-07-04T02:27:24.410+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-07-04T02:27:24.441+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-07-04T02:27:24.471+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-07-04T02:27:24.473+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:24.500+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:24.530+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:24.559+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:24.591+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:24.619+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-04T02:27:24.969+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:24.970+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-07-04T02:27:24.971+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-07-04T02:27:25.166+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:25.168+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-07-04T02:27:25.359+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:25.361+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-07-04T02:27:25.542+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:25.543+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-07-04T02:27:25.713+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:25.714+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-07-04T02:27:25.884+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-04T02:27:25.885+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-07-04T02:27:25.886+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 1) to offset 35606.
+[2025-07-04T02:27:25.889+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 5) to offset 35540.
+[2025-07-04T02:27:25.890+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 3) to offset 35323.
+[2025-07-04T02:27:25.890+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 2) to offset 35856.
+[2025-07-04T02:27:25.891+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 0) to offset 35634.
+[2025-07-04T02:27:25.956+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 4) to offset 35328.
+[2025-07-04T02:37:43.222+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-07-04T02:37:43.270+0000] {fetcher.py:786} INFO - Fetch to node 1 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-07-04T02:37:43.274+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-07-04T02:37:43.280+0000] {fetcher.py:786} INFO - Fetch to node 2 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-07-04T02:37:43.282+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-07-04T02:37:43.287+0000] {fetcher.py:786} INFO - Fetch to node 3 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-07-04T02:37:43.289+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-07-04T02:37:43.292+0000] {fetcher.py:786} INFO - Fetch to node 5 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-07-04T02:37:43.294+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-07-04T02:37:43.297+0000] {fetcher.py:786} INFO - Fetch to node 6 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-07-04T02:37:43.298+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-07-04T02:37:43.300+0000] {fetcher.py:786} INFO - Fetch to node 7 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-07-04T02:37:44.886+0000] {fraud_detection_training.py:155} INFO - Kafka data read successfully with fraud rate: 0.44
+[2025-07-04T02:38:54.283+0000] {logging_mixin.py:190} INFO - 0 rows have NaNs
+[2025-07-04T02:38:54.311+0000] {logging_mixin.py:190} INFO - Empty DataFrame
+Columns: [amount, is_night, is_weekend, transaction_day, user_activity_24h, amount_to_avg_ratio, merchant_risk, merchant, transaction_hour, transaction_hour_sin, transaction_hour_cos, transaction_dayOfWeek, user_transactions_per_minute, is_high_velocity, days_since_last_transaction, is_unusual_hour_for_user, time_diff, user_avg_transaction_interval, zscore_amount_per_user, burst_small_txn_count_last_min, txn_count_last_5min, user_transaction_amount_std, amount_7d_avg, amount_to_avg_ratio_7d, amount_vs_median, user_total_spend_todate, amount_spent_last24h, user_spending_ratio_last24h, prev_amount, amount_change_ratio, user_merchant_transaction_count, num_distinct_merchants_24h, merchant_avg_fraud_rate, is_location_anomalous, is_location_mismatch]
+Index: []
+[2025-07-04T02:38:54.326+0000] {fraud_detection_training.py:449} INFO - Columns with NaNs: []
+[2025-07-04T02:39:07.025+0000] {logging_mixin.py:190} WARNING - [I 2025-07-04 02:39:07,025] A new study created in memory with name: no-name-374264c5-d10d-4f43-a161-5076a0e582d3
+[2025-07-04T02:39:07.027+0000] {fraud_detection_training.py:591} INFO - Starting Optuna hyperparameter optimization...
+[2025-07-04T02:39:07.032+0000] {logging_mixin.py:190} WARNING -   0%|          | 0/20 [00:00<?, ?it/s]
+[2025-07-04T02:39:07.069+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:39:15.863+0000] {logging_mixin.py:190} WARNING -                                       
+[2025-07-04T02:39:15.865+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:39:15.865+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:39:15,863] Trial 0 finished with value: 0.34495331424387504 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': False, 'use_amount_spent_last24h': True, 'use_prev_amount': True, 'use_user_activity_24h': True, 'use_txn_per_min': True, 'use_is_high_velocity': True, 'use_txn_count_5min': False, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': True, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': True, 'use_txn_hour': True, 'use_txn_hour_sin': False, 'use_txn_hour_cos': False, 'use_day_of_week': False, 'use_days_since_last': True, 'use_unusual_hour_flag': True, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': False, 'use_txn_amt_std': False, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': False, 'use_merchant_dist_24h': False, 'use_loc_anomalous': False, 'use_loc_mismatch': False, 'max_depth': 5, 'learning_rate': 0.025381232452508642, 'subsample': 0.9933168591466606, 'colsample_bytree': 0.9993766997307858, 'gamma': 0.23112025297979027, 'reg_alpha': 0.04933875462678389}. Best is trial 0 with value: 0.34495331424387504.
+[2025-07-04T02:39:15.866+0000] {logging_mixin.py:190} WARNING -   0%|          | 0/20 [00:08<?, ?it/s]
+[2025-07-04T02:39:15.871+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.344953:   0%|          | 0/20 [00:08<?, ?it/s]
+[2025-07-04T02:39:15.871+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.344953:   5%|5         | 1/20 [00:08<02:47,  8.84s/it]
+[2025-07-04T02:39:16.046+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:39:29.693+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-04T02:39:29.694+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:39:29.695+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:39:29,693] Trial 1 finished with value: 0.30914011800240665 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': False, 'use_amount_spent_last24h': True, 'use_prev_amount': True, 'use_user_activity_24h': False, 'use_txn_per_min': False, 'use_is_high_velocity': True, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': True, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': False, 'use_txn_hour': True, 'use_txn_hour_sin': True, 'use_txn_hour_cos': False, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': True, 'use_avg_txn_interval': True, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': False, 'use_amt_7d_avg': False, 'use_total_spend': False, 'use_merchant_risk': False, 'use_merchant': False, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': False, 'use_loc_anomalous': True, 'use_loc_mismatch': False, 'max_depth': 3, 'learning_rate': 0.02460103751321016, 'subsample': 0.8909642509260448, 'colsample_bytree': 0.8802573057514873, 'gamma': 0.16465721247718285, 'reg_alpha': 0.24375038867956833}. Best is trial 0 with value: 0.34495331424387504.
+[2025-07-04T02:39:29.695+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.344953:   5%|5         | 1/20 [00:22<02:47,  8.84s/it]
+[2025-07-04T02:39:29.701+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.344953:   5%|5         | 1/20 [00:22<02:47,  8.84s/it]
+[2025-07-04T02:39:29.702+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.344953:  10%|#         | 2/20 [00:22<03:31, 11.78s/it]
+[2025-07-04T02:39:29.722+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:39:47.910+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-04T02:39:47.911+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:39:47.911+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:39:47,909] Trial 2 finished with value: 0.40714416164559414 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': False, 'use_amount_spent_last24h': True, 'use_prev_amount': False, 'use_user_activity_24h': True, 'use_txn_per_min': False, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': False, 'use_amt_vs_median': True, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': True, 'use_txn_hour': True, 'use_txn_hour_sin': False, 'use_txn_hour_cos': False, 'use_day_of_week': False, 'use_days_since_last': False, 'use_unusual_hour_flag': True, 'use_time_diff': True, 'use_avg_txn_interval': True, 'use_zscore_amt': False, 'use_burst_small_txn': True, 'use_txn_amt_std': False, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': False, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': False, 'use_merchant_dist_24h': True, 'use_loc_anomalous': False, 'use_loc_mismatch': False, 'max_depth': 7, 'learning_rate': 0.02383708030345073, 'subsample': 0.8749615542489411, 'colsample_bytree': 0.8115099225357767, 'gamma': 0.23336560119167424, 'reg_alpha': 0.07524482046581116}. Best is trial 2 with value: 0.40714416164559414.
+[2025-07-04T02:39:47.912+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.344953:  10%|#         | 2/20 [00:40<03:31, 11.78s/it]
+[2025-07-04T02:39:47.917+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.407144:  10%|#         | 2/20 [00:40<03:31, 11.78s/it]
+[2025-07-04T02:39:47.918+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.407144:  15%|#5        | 3/20 [00:40<04:10, 14.72s/it]
+[2025-07-04T02:39:47.935+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:39:57.962+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-04T02:39:57.962+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:39:57.963+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:39:57,961] Trial 3 finished with value: 0.44870004477193515 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': False, 'use_is_high_velocity': True, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': False, 'use_amt_vs_median': False, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': False, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': True, 'use_avg_txn_interval': True, 'use_zscore_amt': True, 'use_burst_small_txn': False, 'use_txn_amt_std': False, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': False, 'use_loc_mismatch': True, 'max_depth': 7, 'learning_rate': 0.03715087928175519, 'subsample': 0.6916082288612588, 'colsample_bytree': 0.8394546465140922, 'gamma': 0.0392303127164235, 'reg_alpha': 0.4258428072415334}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:39:57.964+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.407144:  15%|#5        | 3/20 [00:50<04:10, 14.72s/it]
+[2025-07-04T02:39:57.971+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  15%|#5        | 3/20 [00:50<04:10, 14.72s/it]  
+[2025-07-04T02:39:57.971+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  20%|##        | 4/20 [00:50<03:26, 12.88s/it]
+[2025-07-04T02:39:57.993+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:40:09.054+0000] {logging_mixin.py:190} WARNING -                                                                                  
+[2025-07-04T02:40:09.055+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:40:09.056+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:40:09,054] Trial 4 finished with value: 0.3846893918285496 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': False, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': True, 'use_user_activity_24h': True, 'use_txn_per_min': True, 'use_is_high_velocity': True, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': False, 'use_amt_vs_median': True, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': True, 'use_txn_hour_sin': True, 'use_txn_hour_cos': False, 'use_day_of_week': True, 'use_days_since_last': True, 'use_unusual_hour_flag': True, 'use_time_diff': True, 'use_avg_txn_interval': True, 'use_zscore_amt': False, 'use_burst_small_txn': False, 'use_txn_amt_std': True, 'use_amt_7d_avg': True, 'use_total_spend': False, 'use_merchant_risk': False, 'use_merchant': False, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': False, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 3, 'learning_rate': 0.04479169733841537, 'subsample': 0.7332614373813492, 'colsample_bytree': 0.8342209427417133, 'gamma': 0.14898486622799098, 'reg_alpha': 0.4261601979118264}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:40:09.056+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  20%|##        | 4/20 [01:02<03:26, 12.88s/it]
+[2025-07-04T02:40:09.062+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  20%|##        | 4/20 [01:02<03:26, 12.88s/it]
+[2025-07-04T02:40:09.063+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  25%|##5       | 5/20 [01:02<03:03, 12.23s/it]
+[2025-07-04T02:40:09.078+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:40:22.576+0000] {logging_mixin.py:190} WARNING -                                                                                  
+[2025-07-04T02:40:22.577+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:40:22.578+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:40:22,576] Trial 5 finished with value: 0.4085425615847213 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': False, 'use_amount_spent_last24h': True, 'use_prev_amount': False, 'use_user_activity_24h': True, 'use_txn_per_min': False, 'use_is_high_velocity': True, 'use_txn_count_5min': False, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': False, 'use_amt_vs_median': False, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': False, 'use_txn_hour': True, 'use_txn_hour_sin': True, 'use_txn_hour_cos': True, 'use_day_of_week': False, 'use_days_since_last': False, 'use_unusual_hour_flag': True, 'use_time_diff': False, 'use_avg_txn_interval': True, 'use_zscore_amt': False, 'use_burst_small_txn': False, 'use_txn_amt_std': False, 'use_amt_7d_avg': True, 'use_total_spend': False, 'use_merchant_risk': True, 'use_merchant': False, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': False, 'use_loc_mismatch': False, 'max_depth': 5, 'learning_rate': 0.03699659643140584, 'subsample': 0.683340136606832, 'colsample_bytree': 0.8256910448893146, 'gamma': 0.28145851827155594, 'reg_alpha': 0.2670689449836517}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:40:22.578+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  25%|##5       | 5/20 [01:15<03:03, 12.23s/it]
+[2025-07-04T02:40:22.584+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  25%|##5       | 5/20 [01:15<03:03, 12.23s/it]
+[2025-07-04T02:40:22.584+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  30%|###       | 6/20 [01:15<02:57, 12.67s/it]
+[2025-07-04T02:40:22.602+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:40:29.549+0000] {logging_mixin.py:190} WARNING -                                                                                  
+[2025-07-04T02:40:29.550+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:40:29.551+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:40:29,549] Trial 6 finished with value: 0.174997861823071 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': False, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': True, 'use_txn_per_min': True, 'use_is_high_velocity': True, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': True, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': False, 'use_day_of_week': True, 'use_days_since_last': True, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': True, 'use_total_spend': False, 'use_merchant_risk': False, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': False, 'use_loc_anomalous': False, 'use_loc_mismatch': False, 'max_depth': 3, 'learning_rate': 0.018768211141373673, 'subsample': 0.6024510606044216, 'colsample_bytree': 0.729219007101772, 'gamma': 0.27216407650684593, 'reg_alpha': 0.25783410835666754}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:40:29.551+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  30%|###       | 6/20 [01:22<02:57, 12.67s/it]
+[2025-07-04T02:40:29.556+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  30%|###       | 6/20 [01:22<02:57, 12.67s/it]
+[2025-07-04T02:40:29.557+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  35%|###5      | 7/20 [01:22<02:20, 10.81s/it]
+[2025-07-04T02:40:29.573+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:40:42.484+0000] {logging_mixin.py:190} WARNING -                                                                                  
+[2025-07-04T02:40:42.484+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:40:42.485+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:40:42,483] Trial 7 finished with value: 0.41840831661731465 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_amount_spent_last24h': True, 'use_prev_amount': True, 'use_user_activity_24h': True, 'use_txn_per_min': False, 'use_is_high_velocity': True, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': False, 'use_amt_vs_median': True, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': False, 'use_txn_hour': False, 'use_txn_hour_sin': True, 'use_txn_hour_cos': True, 'use_day_of_week': False, 'use_days_since_last': True, 'use_unusual_hour_flag': True, 'use_time_diff': False, 'use_avg_txn_interval': True, 'use_zscore_amt': False, 'use_burst_small_txn': False, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': False, 'use_merchant': False, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': False, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 3, 'learning_rate': 0.06746850432195912, 'subsample': 0.6619190659142792, 'colsample_bytree': 0.637213259236509, 'gamma': 0.035521273116935155, 'reg_alpha': 0.32353246146258585}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:40:42.486+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  35%|###5      | 7/20 [01:35<02:20, 10.81s/it]
+[2025-07-04T02:40:42.491+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  35%|###5      | 7/20 [01:35<02:20, 10.81s/it]
+[2025-07-04T02:40:42.492+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  40%|####      | 8/20 [01:35<02:17, 11.48s/it]
+[2025-07-04T02:40:42.508+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:40:59.856+0000] {logging_mixin.py:190} WARNING -                                                                                  
+[2025-07-04T02:40:59.856+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:40:59.857+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:40:59,855] Trial 8 finished with value: 0.44758048695397484 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': False, 'use_amount_spent_last24h': False, 'use_prev_amount': True, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': False, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': True, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': False, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 5, 'learning_rate': 0.06809897401649055, 'subsample': 0.8959181909245428, 'colsample_bytree': 0.646501410060343, 'gamma': 0.029717735910117546, 'reg_alpha': 0.48750273385818105}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:40:59.858+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  40%|####      | 8/20 [01:52<02:17, 11.48s/it]
+[2025-07-04T02:40:59.863+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  40%|####      | 8/20 [01:52<02:17, 11.48s/it]
+[2025-07-04T02:40:59.864+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  45%|####5     | 9/20 [01:52<02:26, 13.33s/it]
+[2025-07-04T02:40:59.880+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:41:12.898+0000] {logging_mixin.py:190} WARNING -                                                                                  
+[2025-07-04T02:41:12.899+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:41:12.900+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:41:12,898] Trial 9 finished with value: 0.3995184230734488 and parameters: {'use_amount': False, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': False, 'use_amount_spent_last24h': False, 'use_prev_amount': True, 'use_user_activity_24h': True, 'use_txn_per_min': True, 'use_is_high_velocity': True, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': True, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': False, 'use_txn_hour': False, 'use_txn_hour_sin': True, 'use_txn_hour_cos': False, 'use_day_of_week': False, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': True, 'use_avg_txn_interval': False, 'use_zscore_amt': False, 'use_burst_small_txn': False, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': False, 'use_merchant_dist_24h': True, 'use_loc_anomalous': False, 'use_loc_mismatch': True, 'max_depth': 7, 'learning_rate': 0.01006541556216373, 'subsample': 0.922765996182385, 'colsample_bytree': 0.7359939258839308, 'gamma': 0.11283393817088672, 'reg_alpha': 0.42262565232794486}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:41:12.901+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  45%|####5     | 9/20 [02:05<02:26, 13.33s/it]
+[2025-07-04T02:41:12.908+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  45%|####5     | 9/20 [02:05<02:26, 13.33s/it]
+[2025-07-04T02:41:12.909+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  50%|#####     | 10/20 [02:05<02:12, 13.24s/it]
+[2025-07-04T02:41:13.011+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:41:22.388+0000] {logging_mixin.py:190} WARNING -                                                                                   
+[2025-07-04T02:41:22.391+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:41:22.392+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:41:22,388] Trial 10 finished with value: 0.37374128986132565 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': False, 'use_is_high_velocity': False, 'use_txn_count_5min': False, 'use_amt_to_avg_ratio': True, 'use_amt_to_avg_ratio_7d': False, 'use_amt_vs_median': False, 'use_amt_change_ratio': False, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': False, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': True, 'use_avg_txn_interval': True, 'use_zscore_amt': True, 'use_burst_small_txn': False, 'use_txn_amt_std': False, 'use_amt_7d_avg': True, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': True, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': False, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.01374429252580058, 'subsample': 0.7855951350880045, 'colsample_bytree': 0.9309491248895785, 'gamma': 0.08602182732363868, 'reg_alpha': 0.16191591234250052}. Best is trial 3 with value: 0.44870004477193515.
+[2025-07-04T02:41:22.394+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  50%|#####     | 10/20 [02:15<02:12, 13.24s/it]
+[2025-07-04T02:41:22.403+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  50%|#####     | 10/20 [02:15<02:12, 13.24s/it]
+[2025-07-04T02:41:22.404+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  55%|#####5    | 11/20 [02:15<01:48, 12.09s/it]
+[2025-07-04T02:41:22.506+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:41:39.083+0000] {logging_mixin.py:190} WARNING -                                                                                   
+[2025-07-04T02:41:39.084+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:41:39.084+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:41:39,082] Trial 11 finished with value: 0.4521451343868253 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.08080884052606901, 'subsample': 0.8146620269707887, 'colsample_bytree': 0.6002187025406969, 'gamma': 0.007566731748756841, 'reg_alpha': 0.49601743569551887}. Best is trial 11 with value: 0.4521451343868253.
+[2025-07-04T02:41:39.085+0000] {logging_mixin.py:190} WARNING - Best trial: 3. Best value: 0.4487:  55%|#####5    | 11/20 [02:32<01:48, 12.09s/it]
+[2025-07-04T02:41:39.090+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.452145:  55%|#####5    | 11/20 [02:32<01:48, 12.09s/it]
+[2025-07-04T02:41:39.091+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.452145:  60%|######    | 12/20 [02:32<01:47, 13.49s/it]
+[2025-07-04T02:41:39.169+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:41:55.263+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:41:55.264+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:41:55.265+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:41:55,263] Trial 12 finished with value: 0.45005677750269824 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': True, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': False, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.09721125435553828, 'subsample': 0.8016339436737112, 'colsample_bytree': 0.7194519656382561, 'gamma': 0.008779675338262074, 'reg_alpha': 0.4855948279869851}. Best is trial 11 with value: 0.4521451343868253.
+[2025-07-04T02:41:55.266+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.452145:  60%|######    | 12/20 [02:48<01:47, 13.49s/it]
+[2025-07-04T02:41:55.273+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.452145:  60%|######    | 12/20 [02:48<01:47, 13.49s/it]
+[2025-07-04T02:41:55.274+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.452145:  65%|######5   | 13/20 [02:48<01:40, 14.31s/it]
+[2025-07-04T02:41:55.358+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:42:12.899+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:42:12.900+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:42:12.900+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:42:12,898] Trial 13 finished with value: 0.4534727942359947 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.09873942371054158, 'subsample': 0.8120122251501166, 'colsample_bytree': 0.7116789138539873, 'gamma': 0.002745247625892168, 'reg_alpha': 0.47194310636451564}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:42:12.901+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.452145:  65%|######5   | 13/20 [03:05<01:40, 14.31s/it]
+[2025-07-04T02:42:12.907+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  65%|######5   | 13/20 [03:05<01:40, 14.31s/it]
+[2025-07-04T02:42:12.908+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  70%|#######   | 14/20 [03:05<01:31, 15.31s/it]
+[2025-07-04T02:42:12.987+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:42:27.683+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:42:27.684+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:42:27.685+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:42:27,683] Trial 14 finished with value: 0.451316378977078 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': False, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.09523007561076315, 'subsample': 0.8093366941934536, 'colsample_bytree': 0.6118827258032233, 'gamma': 0.07722740518483798, 'reg_alpha': 0.3505758606879914}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:42:27.685+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  70%|#######   | 14/20 [03:20<01:31, 15.31s/it]
+[2025-07-04T02:42:27.691+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  70%|#######   | 14/20 [03:20<01:31, 15.31s/it]
+[2025-07-04T02:42:27.692+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  75%|#######5  | 15/20 [03:20<01:15, 15.15s/it]
+[2025-07-04T02:42:27.771+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:42:41.956+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:42:41.957+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:42:41.957+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:42:41,956] Trial 15 finished with value: 0.4431286985016441 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 4, 'learning_rate': 0.05848050483940597, 'subsample': 0.845323764402709, 'colsample_bytree': 0.6801368316189209, 'gamma': 0.07018847003608232, 'reg_alpha': 0.4973998524106749}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:42:41.958+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  75%|#######5  | 15/20 [03:34<01:15, 15.15s/it]
+[2025-07-04T02:42:41.963+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  75%|#######5  | 15/20 [03:34<01:15, 15.15s/it]
+[2025-07-04T02:42:41.964+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  80%|########  | 16/20 [03:34<00:59, 14.89s/it]
+[2025-07-04T02:42:42.043+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:42:49.572+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:42:49.573+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:42:49.573+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:42:49,571] Trial 16 finished with value: 0.45135617228225317 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.0525778055135351, 'subsample': 0.7341707056062701, 'colsample_bytree': 0.6001602453893606, 'gamma': 0.005438746707495203, 'reg_alpha': 0.3614535465734303}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:42:49.574+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  80%|########  | 16/20 [03:42<00:59, 14.89s/it]
+[2025-07-04T02:42:49.579+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  80%|########  | 16/20 [03:42<00:59, 14.89s/it]
+[2025-07-04T02:42:49.580+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  85%|########5 | 17/20 [03:42<00:38, 12.70s/it]
+[2025-07-04T02:42:49.659+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:42:56.099+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:42:56.100+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:42:56.100+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:42:56,099] Trial 17 finished with value: 0.44517564829074024 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 4, 'learning_rate': 0.07708779235088158, 'subsample': 0.9641453371697388, 'colsample_bytree': 0.7645608759558437, 'gamma': 0.12840529432762765, 'reg_alpha': 0.4018159786955403}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:42:56.101+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  85%|########5 | 17/20 [03:49<00:38, 12.70s/it]
+[2025-07-04T02:42:56.106+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  85%|########5 | 17/20 [03:49<00:38, 12.70s/it]
+[2025-07-04T02:42:56.107+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  90%|######### | 18/20 [03:49<00:21, 10.85s/it]
+[2025-07-04T02:42:56.190+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:43:15.614+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:43:15.614+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:43:15.615+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:43:15,613] Trial 18 finished with value: 0.44576630871820777 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': False, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': False, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': True, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': True, 'use_total_spend': False, 'use_merchant_risk': False, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': False, 'use_merchant_dist_24h': False, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.08204125356141599, 'subsample': 0.7683091290017549, 'colsample_bytree': 0.677313272805188, 'gamma': 0.19144473776865856, 'reg_alpha': 0.16870399780357703}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:43:15.616+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  90%|######### | 18/20 [04:08<00:21, 10.85s/it]
+[2025-07-04T02:43:15.621+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  90%|######### | 18/20 [04:08<00:21, 10.85s/it]
+[2025-07-04T02:43:15.622+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  95%|#########5| 19/20 [04:08<00:13, 13.45s/it]
+[2025-07-04T02:43:15.711+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-04T02:43:22.075+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-04T02:43:22.075+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-04T02:43:22.076+0000] {logging_mixin.py:190} INFO - [I 2025-07-04 02:43:22,074] Trial 19 finished with value: 0.44106718933907874 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 4, 'learning_rate': 0.05135052613110007, 'subsample': 0.8396257641941525, 'colsample_bytree': 0.6839963317969874, 'gamma': 0.057929633707154655, 'reg_alpha': 0.463742484930012}. Best is trial 13 with value: 0.4534727942359947.
+[2025-07-04T02:43:22.077+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  95%|#########5| 19/20 [04:15<00:13, 13.45s/it]
+[2025-07-04T02:43:22.082+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473:  95%|#########5| 19/20 [04:15<00:13, 13.45s/it]
+[2025-07-04T02:43:22.083+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473: 100%|##########| 20/20 [04:15<00:00, 11.35s/it]
+[2025-07-04T02:43:22.084+0000] {logging_mixin.py:190} WARNING - Best trial: 13. Best value: 0.453473: 100%|##########| 20/20 [04:15<00:00, 12.75s/it]
+[2025-07-04T02:43:22.087+0000] {fraud_detection_training.py:594} INFO - Best hyperparameters using Optuna: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': True, 'use_amount_spent_last24h': False, 'use_prev_amount': False, 'use_user_activity_24h': False, 'use_txn_per_min': True, 'use_is_high_velocity': False, 'use_txn_count_5min': True, 'use_amt_to_avg_ratio': False, 'use_amt_to_avg_ratio_7d': True, 'use_amt_vs_median': False, 'use_amt_change_ratio': True, 'use_spend_ratio_24h': True, 'use_txn_hour': False, 'use_txn_hour_sin': False, 'use_txn_hour_cos': True, 'use_day_of_week': True, 'use_days_since_last': False, 'use_unusual_hour_flag': False, 'use_time_diff': False, 'use_avg_txn_interval': False, 'use_zscore_amt': True, 'use_burst_small_txn': True, 'use_txn_amt_std': True, 'use_amt_7d_avg': False, 'use_total_spend': True, 'use_merchant_risk': True, 'use_merchant': True, 'use_merchant_avg_fraud': False, 'use_merchant_txn_cnt': True, 'use_merchant_dist_24h': True, 'use_loc_anomalous': True, 'use_loc_mismatch': True, 'max_depth': 6, 'learning_rate': 0.09873942371054158, 'subsample': 0.8120122251501166, 'colsample_bytree': 0.7116789138539873, 'gamma': 0.002745247625892168, 'reg_alpha': 0.47194310636451564}
+[2025-07-04T02:43:22.330+0000] {logging_mixin.py:190} INFO - 🏃 View run victorious-ram-15 at: http://mlflow-server:5500/#/experiments/1/runs/d3224c25f2e34f49a4b1296ac7485667
+[2025-07-04T02:43:22.331+0000] {logging_mixin.py:190} INFO - 🧪 View experiment at: http://mlflow-server:5500/#/experiments/1
+[2025-07-04T02:43:22.388+0000] {fraud_detection_training.py:747} ERROR - Training failed: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 628, in train_model
+    X_train_selected = X_train[best_features]
+                       ~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/frame.py", line 3899, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6115, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6179, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+[2025-07-04T02:43:22.408+0000] {fraud_detection_training_dag.py:37} ERROR - Training failed: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 628, in train_model
+    X_train_selected = X_train[best_features]
+                       ~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/frame.py", line 3899, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6115, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6179, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+[2025-07-04T02:43:22.445+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 628, in train_model
+    X_train_selected = X_train[best_features]
+                       ~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/frame.py", line 3899, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6115, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6179, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+[2025-07-04T02:43:22.463+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=fraud_detection_training, task_id=execute_training, run_id=manual__2025-07-04T02:27:00.326795+00:00, execution_date=20250704T022700, start_date=20250704T022709, end_date=20250704T024322
+[2025-07-04T02:43:22.512+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-07-04T02:43:22.513+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 10 for task execute_training (Model training failed: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"; 897)
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 628, in train_model
+    X_train_selected = X_train[best_features]
+                       ~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/frame.py", line 3899, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6115, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/home/airflow/.local/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 6179, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: "['txn_per_min', 'txn_count_5min', 'amt_to_avg_ratio_7d', 'amt_change_ratio', 'spend_ratio_24h', 'txn_hour_cos', 'day_of_week', 'zscore_amt', 'burst_small_txn', 'txn_amt_std', 'total_spend', 'merchant_txn_cnt', 'merchant_dist_24h', 'loc_anomalous', 'loc_mismatch'] not in index"
+[2025-07-04T02:43:22.632+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2025-07-04T02:43:23.020+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-07-04T02:43:23.024+0000] {local_task_job_runner.py:245} INFO - ::endgroup::
