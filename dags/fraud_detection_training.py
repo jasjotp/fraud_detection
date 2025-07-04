@@ -615,7 +615,7 @@ class FraudDetectionTraining:
                 best_features = list(dict.fromkeys(base_features + list(best_feature_flags.keys())))
                 
                 # log the selected features to MLFLow 
-                mlflow.log_param('selected_features: ', ','.join(best_features))
+                mlflow.log_param('selected_features: ', ', '.join(best_features))
 
                 # find the best model in the pipeline 
                 best_model = ImbPipeline([
@@ -743,6 +743,7 @@ class FraudDetectionTraining:
                 # log the model locally 
                 os.makedirs('/app/models', exist_ok = True)
 
+                best_model.selected_features_ = best_features
                 joblib.dump(best_model, '/app/models/fraud_detection_model.pkl')
 
                 logger.info(f'Training successfully completed with metrics: {metrics}')
