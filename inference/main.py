@@ -2,10 +2,11 @@ import os
 import logging
 import joblib
 import pandas as pd
+import math
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (StructType, StructField, StringType,
                               IntegerType, DoubleType, TimestampType, LongType)
-from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf, PandasUDFType, udf, dayofweek, when, lit, coalesce, window, avg, unix_timestamp, lag, count)
+from pyspark.sql.functions import (from_json, col, hour, dayofmonth, pandas_udf, PandasUDFType, udf, dayofweek, dayofmonth, when, lit, coalesce, window, avg, unix_timestamp, lag, count, sin, cos, expr, date_trunc)
 from pyspark.sql.window import Window
 from redis import Redis
 from dotenv import load_dotenv
@@ -13,7 +14,8 @@ import mlflow
 from mlflow.tracking import MlflowClient
 import yaml
 import json
-from redis_utils import (get_redis_connection, redis_activity_udf, get_amount_to_avg_ratio_redis, time_since_last_txn_redis)
+from redis_utils import (get_redis_connection, redis_activity_udf, get_amount_to_avg_ratio_redis, time_since_last_txn_redis, increment_and_get_minute_count, flag_unusual_hour, update_and_get_avg_interval, zscore_amount_udf, rolling_stddev_amount_redis, amount_vs_median_redis, user_total_spend_todate_redis, amount_spent_last24h_redis, prev_amount_redis, user_merchant_txn_count_redis, num_distinct_merchants_24h_redis, prev_location_redis, is_location_mismatch_redis)
+
 logging.basicConfig(
     level = logging.INFO,
     format = '%(asctime)s [%(levelname)s] %(message)s'
@@ -46,9 +48,14 @@ class FraudDetectionInference:
     # function that loads the model 
     def load_model(self, model_path):
         try:
-            # try to load the model path 
+            # try to load the model path and the selected features by Optuna
             model = joblib.load(model_path)
-            logger.info(f'Model loaded from: {model_path}')
+            self.selected_features = getattr(model, 'selected_features_', None)
+            if self.selected_features is None:
+                raise ValueError("Model file has no 'selected_features_' attribute - Retrain the model with the patch that saves it.")
+
+            logger.info(f'Model loaded from: {model_path} with {len(self.selected_features)} input features.')
+
             return model
         except Exception as e:
             logger.error(f'Error loading model: {e}', exc_info = True)
@@ -181,7 +188,7 @@ class FraudDetectionInference:
         df = df.withColumn('is_night',
                            ((hour(col('timestamp')) >= 22) | (hour(col('timestamp')) < 5)).cast('int')) # whehter the transaction happen overnight (between 10PM and 5AM)
         
-        df = df.withColumn('transaction_day', dayofweek(col('timestamp')))
+        df = df.withColumn('transaction_day', dayofmonth(col('timestamp')))
 
         df = df.withColumn('user_activity_24h', redis_activity_udf(col('user_id'))) # counts the number of transacions for each user in a rolling 24 hour window using timestamp
         df = df.withColumn('amount_to_avg_ratio', get_amount_to_avg_ratio_redis(col('user_id'), col('amount'))) # get the ratio of the current amount to the rolling mean of the last 6 transactions (exluding current one) 
@@ -191,9 +198,181 @@ class FraudDetectionInference:
         df = df.withColumn('merchant_risk',
                            when(col('merchant').isin(high_risk_merchants), lit(1)).otherwise(lit(0)))
 
-        # subtract the current transactions timestamp with the previous timestamp for the user to find each transaction/user's time since last transaction (in seconds)
-        df = df.withColumn('time_since_last_txn',
+        # subtract the current transactions timestamp with the previous timestamp for the user to find each transaction/user's time since last transaction (in days)
+        df = df.withColumn('days_since_last_transaction',
                            time_since_last_txn_redis(col('user_id'), col('timestamp')))
+        
+        # create a feature with the sine and cosine of the transaction hour so that the model can learn cyclic nature like hour 23 and 0 actually being close to each other
+        df = df.withColumn('transaction_hour_sin', sin(lit(2 * math.pi) * col('transaction_hour') / lit(24)))
+        df = df.withColumn('transaction_hour_cos', cos(lit(2 * math.pi) * col('transaction_hour') / lit(24)))
+        
+        # feature for day of the week for transaction (in pandas format with 0 = Monday and 6 = Monday, compared to Spark where Sunday = 1 and Saturday = 7)
+        df = df.withColumn('transaction_dayOfWeek', expr("((dayofweek(timestamp) + 5) % 7)"))
+
+        # flag high velocity transactions (5 or more in the same minute per user)
+        # count how many transactions each user makes in that exact minute 
+        df = df.withColumn('user_transactions_per_minute', increment_and_get_minute_count(col('user_id'), col('timestamp')))
+
+        # flag if transaction count in that minute is 5 or more 
+        df = df.withColumn('is_high_velocity', (col('user_transactions_per_minute') >= 5).cast('int'))
+
+        # find the hours where the user rarely transacts at (less than 5% of the time)
+        df = df.withColumn('is_unusual_hour_for_user', flag_unusual_hour(col('user_id'), col('timestamp')))
+
+        # find the time between the current and past transactions per user (in seconds) - the time_since_last_txn_redis returns a float result of days since last transaction, so we can convert that to seconds by multiping by 86,400
+        df = df.withColumn(
+                        'time_diff', 
+                        (time_since_last_txn_redis(col('user_id'), col('timestamp')) * lit(86_400.0)).cast('double')
+        )
+
+        # find the rolling average transaction interval for that user for each transaction (find each users average time between past transactions)
+        df = df.withColumn('user_avg_transaction_interval', update_and_get_avg_interval(col('user_id'), col('time_diff')))
+
+        # calculate the zscore amount per user to catch outliers based on each user's transaction history 
+        df = df.withColumn('zscore_amount_per_user', zscore_amount_udf(col('user_id'), col('amount')))
+
+        # feature for burst detection: < $2 transactions in the last minute
+        burst_counts = (
+            df.filter(col('amount') < 2.0)
+                .withWatermark('timestamp', '65 seconds')
+                .groupBy(window(col('timestamp'), '60 seconds', '1 second'),
+                        col('user_id'),
+                )
+                .count()
+                .withColumnRenamed('count', 'burst_small_txn_count_last_min')
+                # keep only the end of the window so it lines up with the event's own timestamp
+                .select(
+                    col('user_id').alias('uid_burst'),
+                    col('window')['end'].alias('ts_burst'),
+                    'burst_small_txn_count_last_min'
+                )
+        )
+
+        # join back on equality of (user_id, timestamp)
+        df_main = df.withWatermark('timestamp', '65 seconds').alias('df') # left watermark and alias 
+        bc = burst_counts.alias('bc')
+
+        df = (
+            df_main.join(
+                bc, 
+                (col('df.user_id') == col('bc.uid_burst')) & (col('df.timestamp') == col('bc.ts_burst')),
+                'left'
+            )
+        .drop('uid_burst', 'ts_burst')
+        .fillna({'burst_small_txn_count_last_min': 0})
+        )
+
+        # feature to get the transaction count for the user in the last 5 minutes 
+
+        # compute the rolling 5-minute transaction count per user 
+        txn_count_5min = (
+            df.withWatermark('timestamp', '6 minutes')
+            .groupBy(
+                window(col('timestamp'), '5 minutes', '1 second'),
+                col('user_id')
+            )
+            .agg(count('*').alias('txn_count_last_5min'))
+            .select(
+                col('user_id').alias('uid_txn'),
+                col('window').getField('end').alias('ts_txn'),
+                'txn_count_last_5min'
+            )
+        )
+
+        # join the result back to the main df on user_id and timestamp
+        df_main = df.withWatermark("timestamp", "6 minutes").alias("df")
+        txn = txn_count_5min.alias('txn')
+
+        df = (
+            df_main.join(
+                txn,
+                (df_main.user_id == txn.uid_txn) & (df_main.timestamp == txn.ts_txn),
+                'left'
+            )
+            .drop('uid_txn', 'ts_txn')
+            .fillna({'txn_count_last_5min': 0})
+        )
+
+        # extract the rolling standard deviation for each user for their last 10 tramsactions
+        df = df.withColumn('user_transaction_amount_std', rolling_stddev_amount_redis(col('user_id'), col('amount')))
+
+        # extract the average amount spent by each user in the last 7 days 
+        amount_7d_avg = (
+            df.withWatermark('timestamp', '8 days')
+            .groupBy(
+                window(col('timestamp'), '7 days', '1 second'), # rolling window
+                col('user_id')
+            )
+            .agg(avg('amount').alias('amount_7d_avg'))
+            # keep only the window-end so we can align with the event's own timestamp
+            .select(
+                col('user_id').alias('uid_7d'),
+                col('window').getField('end').alias('ts_7d'),
+                'amount_7d_avg'
+            )
+        )
+
+        # join the result back to the main stream on (user_id, timestamp)
+        df_main = df.withWatermark('timestamp', '8 days').alias('df')
+        amount_avg_7d = amount_7d_avg.alias('a7')
+
+        df = (
+                df_main.join(
+                    amount_avg_7d,
+                    (df_main.user_id == amount_avg_7d.uid_7d) & (df_main.timestamp == amount_avg_7d.ts_7d),
+                    'left'
+                ).drop('uid_7d', 'ts_7d')
+                # if the user has < 7 days of history, default to 0.0
+                .fillna({'amount_7d_avg': 0.0})              
+            )
+
+        # feature that returns the ratio of the current amount compared to the average spent by that user in the last 7 days
+        df = df.withColumn(
+            'amount_to_avg_ratio_7d', 
+            when(col('amount_7d_avg') == 0, lit(1.0)) # if the denominator is 0, default the ratio 1o 1.0
+            .otherwise(col('amount') / col('amount_7d_avg')))
+        
+        # feature that returns the current amount compared to the rolling median of the past 5 transactions for the user
+        df = df.withColumn('amount_vs_median', amount_vs_median_redis(col('user_id'), col('amount')))
+
+        # feature that returns the users total spend to date (excluding the current transaction)
+        df = df.withColumn('user_total_spend_todate', user_total_spend_todate_redis(col('user_id'), col('amount')))
+
+        # feature that computes the users amount spent in the last 24 hours
+        df = df.withColumn('amount_spent_last24h', amount_spent_last24h_redis(col('user_id'), col('timestamp'), col('amount')))
+        
+        # feautre that calculates a normalized ratio of the current amount compared to the amount spent in the last 24 hours (to flag larger purchases)
+        df = df.withColumn('user_spending_ratio_last24h',
+                           when(col('amount_spent_last24h') == 0, lit(1.0))
+                           .otherwise(col('amount') / col('amount_spent_last24h'))
+                        )
+
+        # feature that returns the previous amount of the last transaction made by the user
+        df = df.withColumn('prev_amount',
+                            prev_amount_redis(col("user_id"), col("amount"))
+        )
+
+        # feature that returns the current amount's ratio compared to the previous amount, as big jumps in amount can signal unusual behaviour
+        df = df.withColumn('amount_change_ratio',
+            when(col("prev_amount") == 0, lit(1.0))
+            .otherwise(col("amount") / col("prev_amount"))
+        )
+
+        # extract a feature to see how often the user interacts with this merchant 
+        df = df.withColumn('user_merchant_transaction_count', user_merchant_txn_count_redis(col('user_id'), col('merchant')))
+        
+        # feature to get the number of distinct merchants the user used in the last 24 hours: since fraudsters often test stolen cards across many vendors quickly
+        df = df.withColumn('num_distinct_merchants_24h_redis', num_distinct_merchants_24h_redis(col('user_id'), col('merchant'), col('timestamp')))
+
+        # feature to get previous location for the last transaction for that user
+        df = df.withColumn('prev_location', prev_location_redis(col('user_id'), col('location')))
+
+        # feature to get a flag to see if the current location of the transaction matches the past location for that user
+        df = df.withColumn('is_location_anomalous', (col("location") != col("prev_location")).cast("int"))
+
+        # feature to flag if the current location is differnet from a users home location (location with the most transactions for that user)
+        df = df.withColumn('is_location_mismatch', is_location_mismatch_redis(col('user_id'), col('location')))
+    
         return df 
     
     # helper function to get the most recent thereshold for the most recent run in MLFlow
@@ -268,37 +447,15 @@ class FraudDetectionInference:
         broadcast_model = self.broadcast_model
         threshold = self.get_threshold(experiment_name = 'fraud_detection_')
 
+        # select the selected features from Optuna so we can use then inside the below UDF
+        selected = self.selected_features 
+
         # create a udf function to predict the value (0/1) of the transaction
         @pandas_udf('int', PandasUDFType.SCALAR)
-        def predict_udf(
-                user_id: pd.Series, 
-                amount: pd.Series, 
-                merchant: pd.Series, 
-                currency: pd.Series, 
-                transaction_hour: pd.Series,
-                is_weekend: pd.Series,
-                is_night: pd.Series,
-                time_since_last_txn: pd.Series,
-                transaction_day: pd.Series,
-                merchant_risk: pd.Series,
-                user_activity_24h: pd.Series,
-                amount_to_avg_ratio: pd.Series
-        ) -> pd.Series:
-            # list out the schema that we want to predict on, as a pandas df
-            input_df = pd.DataFrame({
-                'user_id': user_id,
-                'amount': amount,
-                'merchant': merchant,
-                'currency': currency,
-                'transaction_hour': transaction_hour,
-                'is_weekend': is_weekend,
-                'is_night': is_night,
-                'time_since_last_txn': time_since_last_txn,
-                'transaction_day': transaction_day,
-                'merchant_risk': merchant_risk,
-                'user_activity_24h': user_activity_24h,
-                'amount_to_avg_ratio': amount_to_avg_ratio
-            })
+        def predict_udf(*cols: pd.Series) -> pd.Series:
+            # list out the schema that we want to predict on, as a pandas df, and pass in the optimized selection of features from our model
+            input_df = pd.concat(cols, axis = 1)
+            input_df.columns = selected
 
             # get probabilities of the fraud cases 
             prob = broadcast_model.value.predict_proba(input_df)[:, 1]
@@ -307,23 +464,10 @@ class FraudDetectionInference:
             return pd.Series(predictions)
         
         # predict on the new transactions that come in
-        prediction_df = df.withColumn('prediction',
-                                    predict_udf(
-                                        col('user_id'),
-                                        col('amount'),
-                                        col('merchant'),
-                                        col('currency'),
-                                        col('transaction_hour'),
-                                        col('is_weekend'),
-                                        col('is_night'),
-                                        col('time_since_last_txn'),
-                                        col('transaction_day'),
-                                        col('merchant_risk'),
-                                        col('user_activity_24h'),
-                                        col('amount_to_avg_ratio')
-                                    ))
+        predict_cols = [col(c) for c in self.selected_features]
+        prediction_df = df.withColumn('prediction', predict_udf(*predict_cols))
 
-        # only filter for fraud predictions that are flagged as fraudulent
+        # only filter for fraud predictions that are flagged as fraudulent so we can stream those suspected transactions to Kafka
         fraud_predictions = prediction_df.filter(col('prediction') == 1)
         fraud_predictions.selectExpr(
             "CAST(transaction_id as STRING) AS key",

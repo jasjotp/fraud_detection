@@ -224,7 +224,7 @@ class FraudDetectionTraining:
             lambda g: g.rolling('24h', on = 'timestamp', closed = 'left')['amount'].count().fillna(0)
         )
 
-        # find the average time between past transactions per user
+        # find the  time between the current and past transactions per user
         df['time_diff'] = df.groupby('user_id')['timestamp'].diff().dt.total_seconds()
         df['time_diff'] = df['time_diff'].fillna(0)
 
@@ -367,16 +367,6 @@ class FraudDetectionTraining:
 
         df = df.reset_index() # bring timestamp back as a column
 
-        # calculate the merchant's average fraud rate on past transactions 
-        df['merchant_avg_fraud_rate'] = (
-            df.groupby('merchant')['is_fraud']
-            .expanding()
-            .mean()
-            .shift()
-            .reset_index(level = 0, drop = True)
-        )
-        df['merchant_avg_fraud_rate'] = df['merchant_avg_fraud_rate'].fillna(df['merchant_avg_fraud_rate'].mean())
-
         # location based anomoalies 
         df['prev_location'] = df.groupby('user_id')['location'].shift()
         df['is_location_anomalous'] = (df['location'] != df['prev_location']).astype(int)
@@ -418,10 +408,8 @@ class FraudDetectionTraining:
             'amount_change_ratio',
             'user_merchant_transaction_count',
             'num_distinct_merchants_24h',
-            'merchant_avg_fraud_rate',
             'is_location_anomalous',
             'is_location_mismatch'
-            
             ]
 
         if 'is_fraud' not in df.columns:
@@ -534,7 +522,6 @@ class FraudDetectionTraining:
                         # --- merchant-related ---
                         'merchant_risk': trial.suggest_categorical('use_merchant_risk', [True, False]),
                         'merchant': trial.suggest_categorical('use_merchant', [True, False]),
-                        'merchant_avg_fraud_rate': trial.suggest_categorical('use_merchant_avg_fraud_rate', [True, False]),
                         'user_merchant_transaction_count': trial.suggest_categorical('use_user_merchant_transaction_count', [True, False]),
                         'num_distinct_merchants_24h': trial.suggest_categorical('use_num_distinct_merchants_24h', [True, False]),
 

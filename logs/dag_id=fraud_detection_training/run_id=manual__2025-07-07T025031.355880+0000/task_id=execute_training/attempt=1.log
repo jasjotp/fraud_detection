@@ -1,0 +1,15 @@
+[2025-07-07T02:50:38.086+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-07-07T02:50:38.120+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-07-07T02:50:31.355880+00:00 [queued]>
+[2025-07-07T02:50:38.135+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training manual__2025-07-07T02:50:31.355880+00:00 [queued]>
+[2025-07-07T02:50:38.138+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-07-07T02:50:38.160+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-07-07 02:50:31.355880+00:00
+[2025-07-07T02:50:38.170+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=2686) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-07-07T02:50:38.172+0000] {standard_task_runner.py:72} INFO - Started process 2687 to run task
+[2025-07-07T02:50:38.173+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'manual__2025-07-07T02:50:31.355880+00:00', '--job-id', '36', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmp6doqdymg']
+[2025-07-07T02:50:38.175+0000] {standard_task_runner.py:105} INFO - Job 36: Subtask execute_training
+[2025-07-07T02:50:38.265+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training manual__2025-07-07T02:50:31.355880+00:00 [running]> on host 8862b69bc4b5
+[2025-07-07T02:50:38.426+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-07-07T02:50:31.355880+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-07-07T02:50:31.355880+00:00'
+[2025-07-07T02:50:38.430+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-07-07T02:50:38.460+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
