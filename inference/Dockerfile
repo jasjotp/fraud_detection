@@ -82,8 +82,6 @@ COPY --from=builder /app /app
 ENV SPARK_HOME=/spark \
     PATH="/spark/bin:/opt/venv/bin:$PATH" \
     PYTHONPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4j-0.10.9.7-src.zip:/app" \
-    SPARK_DRIVER_MEMORY=512m \
-    SPARK_EXECUTOR_MEMORY=512m \
     PYTHONUNBUFFERED=1
 
 # Configure logging

@@ -383,33 +383,7 @@ class FraudDetectionTraining:
             'user_activity_24h', 
             'amount_to_avg_ratio', 
             'merchant_risk', 
-            'merchant',
-            'transaction_hour',
-            'transaction_hour_sin',
-            'transaction_hour_cos',
-            'transaction_dayOfWeek',
-            'user_transactions_per_minute',
-            'is_high_velocity',
-            'days_since_last_transaction',
-            'is_unusual_hour_for_user',
-            'time_diff',
-            'user_avg_transaction_interval',
-            'zscore_amount_per_user',
-            'burst_small_txn_count_last_min',
-            'txn_count_last_5min',
-            'user_transaction_amount_std',
-            'amount_7d_avg',
-            'amount_to_avg_ratio_7d',
-            'amount_vs_median',
-            'user_total_spend_todate',
-            'amount_spent_last24h',
-            'user_spending_ratio_last24h',
-            'prev_amount',
-            'amount_change_ratio',
-            'user_merchant_transaction_count',
-            'num_distinct_merchants_24h',
-            'is_location_anomalous',
-            'is_location_mismatch'
+            'merchant'
             ]
 
         if 'is_fraud' not in df.columns:
@@ -486,54 +460,15 @@ class FraudDetectionTraining:
                         'is_night': trial.suggest_categorical('use_is_night', [True, False]),
                         'is_weekend': trial.suggest_categorical('use_is_weekend', [True, False]),
                         'transaction_day': trial.suggest_categorical('use_transaction_day', [True, False]),
-                        'amount_spent_last24h': trial.suggest_categorical('use_amount_spent_last24h', [True, False]),
-                        'prev_amount': trial.suggest_categorical('use_prev_amount', [True, False]),
-
-                        # --- activity / velocity ---
                         'user_activity_24h': trial.suggest_categorical('use_user_activity_24h', [True, False]),
-                        'user_transactions_per_minute': trial.suggest_categorical('use_user_transactions_per_minute', [True, False]),
-                        'is_high_velocity': trial.suggest_categorical('use_is_high_velocity', [True, False]),
-                        'txn_count_last_5min': trial.suggest_categorical('use_txn_count_last_5min', [True, False]),
-
-                        # --- ratios & deltas ---
                         'amount_to_avg_ratio': trial.suggest_categorical('use_amount_to_avg_ratio', [True, False]),
-                        'amount_to_avg_ratio_7d': trial.suggest_categorical('use_amount_to_avg_ratio_7d', [True, False]),
-                        'amount_vs_median': trial.suggest_categorical('use_amount_vs_median', [True, False]),
-                        'amount_change_ratio': trial.suggest_categorical('use_amount_change_ratio', [True, False]),
-                        'user_spending_ratio_last24h': trial.suggest_categorical('use_user_spending_ratio_last24h', [True, False]),
-
-                        # --- temporal features ---
-                        'transaction_hour': trial.suggest_categorical('use_transaction_hour', [True, False]),
-                        'transaction_hour_sin': trial.suggest_categorical('use_transaction_hour_sin', [True, False]),
-                        'transaction_hour_cos': trial.suggest_categorical('use_transaction_hour_cos', [True, False]),
-                        'transaction_dayOfWeek': trial.suggest_categorical('use_transaction_dayOfWeek', [True, False]),
-                        'days_since_last_transaction': trial.suggest_categorical('use_days_since_last_transaction', [True, False]),
-                        'is_unusual_hour_for_user': trial.suggest_categorical('use_is_unusual_hour_for_user', [True, False]),
-                        'time_diff': trial.suggest_categorical('use_time_diff', [True, False]),
-
-                        # --- statistical aggregates ---
-                        'user_avg_transaction_interval': trial.suggest_categorical('use_user_avg_transaction_interval', [True, False]),
-                        'zscore_amount_per_user': trial.suggest_categorical('use_zscore_amount_per_user', [True, False]),
-                        'burst_small_txn_count_last_min': trial.suggest_categorical('use_burst_small_txn_count_last_min', [True, False]),
-                        'user_transaction_amount_std': trial.suggest_categorical('use_user_transaction_amount_std', [True, False]),
-                        'amount_7d_avg': trial.suggest_categorical('use_amount_7d_avg', [True, False]),
-                        'user_total_spend_todate': trial.suggest_categorical('use_user_total_spend_todate', [True, False]),
-
-                        # --- merchant-related ---
                         'merchant_risk': trial.suggest_categorical('use_merchant_risk', [True, False]),
                         'merchant': trial.suggest_categorical('use_merchant', [True, False]),
-                        'user_merchant_transaction_count': trial.suggest_categorical('use_user_merchant_transaction_count', [True, False]),
-                        'num_distinct_merchants_24h': trial.suggest_categorical('use_num_distinct_merchants_24h', [True, False]),
-
-                        # --- location anomaly flags ---
-                        'is_location_anomalous': trial.suggest_categorical('use_is_location_anomalous', [True, False]),
-                        'is_location_mismatch':  trial.suggest_categorical('use_is_location_mismatch', [True, False]),
                     }
 
-                    # define the features we want to keep in hte model for sure (the below combination of features gives ~80% precision)
+                    # define the features we want to keep in hte model for sure (the below combination of features give higher precision)
                     base_features = [
-                        'amount', 'is_night', 'is_weekend','transaction_day', 
-                        'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
+                        'amount', 'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
                     ]
 
                     # create the feature subset for the trial 
@@ -589,8 +524,7 @@ class FraudDetectionTraining:
 
                 # define the features we want to keep in the model for sure (the below combination of features gives ~80% precision)
                 base_features = [
-                        'amount', 'is_night', 'is_weekend','transaction_day', 
-                        'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
+                    'amount', 'user_activity_24h', 'amount_to_avg_ratio', 'merchant_risk', 'merchant'
                 ]
 
                 # reconstruct the best feature list from the best trial 
@@ -727,7 +661,7 @@ class FraudDetectionTraining:
                     registered_model_name = 'fraud_detection_model'
                 )
 
-                # log the model locally 
+                # log the model locally and using joblib
                 os.makedirs('/app/models', exist_ok = True)
 
                 best_model.selected_features_ = best_features
