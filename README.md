@@ -56,6 +56,7 @@ The project consists of:
 ---
 
 ## File Structure
+
 ```
 fraud_detection/
 ├── airflow/
@@ -101,6 +102,7 @@ fraud_detection/
 ├── init-multiple-dbs.sh
 └── wait-for-it.sh
 ```
+
 ---
 
 ## Tech Stack
@@ -114,7 +116,7 @@ fraud_detection/
 - **Logging:** Python Logging module
 - **Serialization:** Joblib
 - **Infrastructure:** MinIO (S3-compatible), Docker
-- 
+
 ---
 
 ## To Run the Project
