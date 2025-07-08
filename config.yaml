@@ -1,15 +1,15 @@
 mlflow:
   experiment_name: "fraud_detection_"
   registered_model_name: "fraud_detection_xgboost"
-  tracking_uri: "http://mlflow-server:5500"
+  tracking_uri: ${TRACKING_URI}
   artifact_location: "s3://mlflow/fraud_detection"
-  s3_endpoint_url: "http://minio:9000"
+  s3_endpoint_url: ${S3_ENDPOINT_URL}
   bucket: "mlflow"
 
 kafka:
-  bootstrap_servers: "pkc-ld537.ca-central-1.aws.confluent.cloud:9092"
-  username: "VAWD3ORVNJTGIOBA"
-  password: "YjrlsQeZmoaPCLIvyyoE0dMohu8OulNMOz3rxgDG/LvVlYCUlKohmLceshBl0SjH"
+  bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  username: ${KAFKA_USERNAME}
+  password: ${KAFKA_PASSWORD}
   topic: "transactions"
   output_topic: "fraud_predictions"
   security_protocol: "SASL_SSL"
