@@ -28,6 +28,11 @@ The project consists of:
 - Uses **SMOTE** for class imbalance
 - **Top features:** `amount`, `user_activity_24h`, `amount_to_avg_ratio`, `merchant_risk`, `merchant`
 
+- **Confusion Matrix:**
+    ![Confusion Matrix](graphs/avg_score_comments_by_hour.png)
+
+- **Precision-recall curve:**
+    ![Precision-recall curve](graphs/avg_score_comments_by_hour.png)
 ---
 
 ## Key Features
