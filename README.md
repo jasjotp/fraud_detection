@@ -22,17 +22,15 @@ The project consists of:
 ## Model Performance
 
 - **Precision:** 98%
-- **Recall:** 72%
-- **AUC-PR:** 91%
 - Tuned with **Optuna** for optimal `F-beta` (β=2)
 - Uses **SMOTE** for class imbalance
 - **Top features:** `amount`, `user_activity_24h`, `amount_to_avg_ratio`, `merchant_risk`, `merchant`
 
 - **Confusion Matrix:**
-    ![Confusion Matrix](graphs/avg_score_comments_by_hour.png)
+    ![Confusion Matrix](graphs/confusion_matrix.png)
 
 - **Precision-recall curve:**
-    ![Precision-recall curve](graphs/avg_score_comments_by_hour.png)
+    ![Precision-recall curve](graphs/pr_curve.png)
 ---
 
 ## Key Features
