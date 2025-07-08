@@ -56,7 +56,7 @@ The project consists of:
 ---
 
 ## File Structure
-
+```
 fraud_detection/
 ├── airflow/
 │   ├── Dockerfile
@@ -100,7 +100,7 @@ fraud_detection/
 ├── docker-compose.yaml
 ├── init-multiple-dbs.sh
 └── wait-for-it.sh
-
+```
 ---
 
 ## Tech Stack
