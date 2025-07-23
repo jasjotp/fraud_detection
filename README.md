@@ -1,7 +1,7 @@
 # Real-Time Fraud Detection System 
-Built with Kafka, PySpark, Airflow, MLflow, XGBoost, Redis, and More
+Built with Kafka, PySpark, Airflow, MLflow, XGBoost, Redis, FastAPI, and More
 
-This repo contains an end-to-end real-time fraud detection pipeline that I designed, engineered, and deployed — achieving a precision of **98%**. It’s designed for high-throughput environments and inspired by real-world patterns of financial fraud (account takeovers, card testing, merchant collusion, and geographic anomalies).
+This repo contains an end-to-end real-time fraud detection pipeline that I designed, engineered, and deployed — achieving a precision of **98%**. It’s designed for high-throughput environments and inspired by real-world patterns of financial fraud (account takeovers, card testing, merchant collusion, and geographic anomalies). The model is also served via FastAPI to allow for real-time predictions on incoming transactions.
 
 ---
 
@@ -9,13 +9,14 @@ This repo contains an end-to-end real-time fraud detection pipeline that I desig
 
 The project consists of:
 
-| Component | Tech | Role |
-|----------|------|------|
-| **Data Ingestion** | Kafka, Faker | Streams realistic financial transactions |
-| **Model Training** | XGBoost, Optuna, scikit-learn, MLflow | Trains a fraud classifier with feature engineering and threshold tuning |
-| **Real-Time Inference** | PySpark, Redis, Kafka | Applies the trained model on live transaction streams |
-| **Scheduling & Orchestration** | Airflow | Triggers daily model retraining with resource cleanup |
-| **Feature Store** | Redis | Stores rolling aggregates (e.g. activity, transaction history) for real-time lookup |
+| Component              | Tech                                       | Role                                                                 |
+|------------------------|--------------------------------------------|----------------------------------------------------------------------|
+| **Data Ingestion**     | Kafka, Faker                               | Streams realistic financial transactions                             |
+| **Model Training**     | XGBoost, Optuna, scikit-learn, MLflow      | Trains a fraud classifier with feature engineering and threshold tuning |
+| **Real-Time Inference**| PySpark, Redis, Kafka                      | Applies the trained model on live transaction streams                |
+| **Scheduling & Orchestration** | Airflow                         | Triggers daily model retraining with resource cleanup                |
+| **Feature Store**      | Redis                                      | Stores rolling aggregates (e.g. activity, transaction history) for real-time lookup |
+| **Prediction API**     | FastAPI, Redis, SQLAlchemy, XGBoost        | Serves fraud predictions on incoming transactions via REST API       |
 
 ---
 
@@ -49,7 +50,8 @@ The project consists of:
 - **ML Model Deployment:**  
   - Logged with MLflow  
   - Stored with `joblib`  
-  - Reused via broadcast variables in Spark  
+  - Reused via broadcast variables in Spark
+  - Served via a FastAPI backend to return fraud predictions for incoming transactions through a REST API
 
 - **Built-In Simulation Engine:**  
   - Faker-powered transaction generator
@@ -65,6 +67,22 @@ fraud_detection/
 ├── airflow/
 │   ├── Dockerfile
 │   └── requirements.txt
+│
+├── api/
+│   └── app/
+│       ├── __pycache__/
+│       ├── main.py
+│       ├── database.py
+│       ├── models.py
+│       ├── predict.py
+│       ├── kafka_consumer.py
+│       ├── __init__.py
+│       ├── utils/
+│       │   └── redis_utils.py
+│       └── routers/
+│           ├── predict.py
+│           ├── transactions.py
+│           └── users.py
 │
 ├── config/
 │   └── airflow.cfg
@@ -104,6 +122,7 @@ fraud_detection/
 ├── docker-compose.yaml
 ├── init-multiple-dbs.sh
 └── wait-for-it.sh
+
 ```
 
 ---
@@ -113,6 +132,7 @@ fraud_detection/
 - **Data Streaming:** Kafka
 - **Modeling:** XGBoost, Optuna, scikit-learn, SMOTE
 - **Streaming Compute:** PySpark
+- **Prediction API:** FastAPI
 - **Scheduling:** Airflow
 - **Feature Store:** Redis
 - **Tracking:** MLflow
@@ -132,12 +152,16 @@ fraud_detection/
     ```bash
     airflow dags trigger fraud_detection_training
     ```
-4. (Optional): Run the Spark-based inference (locally):
+4. (Optional as starting Docker will also run inference): Run the Spark-based inference (locally):
     ```bash
     cd inference/
     python main.py
     ```
-
+5. Access FastAPI docs to test predictions manually:
+    ```bash
+    http://localhost:8000/docs
+    ```
+   
 ---
 
 ## Example Fraud Patterns Simulated
