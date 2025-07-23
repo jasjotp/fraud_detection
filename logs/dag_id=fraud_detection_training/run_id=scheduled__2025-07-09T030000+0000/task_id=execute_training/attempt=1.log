@@ -1,0 +1,231 @@
+[2025-07-10T04:34:56.631+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-07-10T04:34:56.696+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training scheduled__2025-07-09T03:00:00+00:00 [queued]>
+[2025-07-10T04:34:56.718+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training scheduled__2025-07-09T03:00:00+00:00 [queued]>
+[2025-07-10T04:34:56.719+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-07-10T04:34:56.746+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-07-09 03:00:00+00:00
+[2025-07-10T04:34:56.765+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'scheduled__2025-07-09T03:00:00+00:00', '--job-id', '67', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmpfen5s4yp']
+[2025-07-10T04:34:56.762+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=3715) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-07-10T04:34:56.782+0000] {standard_task_runner.py:105} INFO - Job 67: Subtask execute_training
+[2025-07-10T04:34:56.782+0000] {standard_task_runner.py:72} INFO - Started process 3716 to run task
+[2025-07-10T04:34:56.874+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training scheduled__2025-07-09T03:00:00+00:00 [running]> on host 0c0522987529
+[2025-07-10T04:34:57.046+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-07-09T03:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-07-09T03:00:00+00:00'
+[2025-07-10T04:34:57.049+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-07-10T04:34:57.155+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-07-10T04:35:15.060+0000] {font_manager.py:1639} INFO - generated new fontManager
+[2025-07-10T04:35:15.427+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-07-10T04:35:15.468+0000] {fraud_detection_training.py:75} INFO - Configuration loaded successfully
+[2025-07-10T04:35:16.129+0000] {fraud_detection_training.py:116} ERROR - Minio connection failed: Invalid endpoint: ${S3_ENDPOINT_URL}
+[2025-07-10T04:35:16.159+0000] {logging_mixin.py:190} WARNING - 2025/07/10 04:35:16 INFO mlflow.tracking.fluent: Experiment with name 'fraud_detection_' does not exist. Creating a new experiment.
+[2025-07-10T04:35:16.165+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-07-10T04:35:16.166+0000] {fraud_detection_training.py:397} INFO - Starting model training process...
+[2025-07-10T04:35:16.166+0000] {fraud_detection_training.py:122} INFO - Connecting to Kafka Topic: transactions
+[2025-07-10T04:35:16.168+0000] {conn.py:1516} WARNING - DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-07-10T04:35:16.168+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092 (0)
+[2025-07-10T04:35:16.169+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-07-10T04:35:16.170+0000] {client_async.py:1049} WARNING - No node available during check_version; sleeping 0.06 secs
+[2025-07-10T04:35:16.229+0000] {conn.py:1516} WARNING - DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-07-10T04:35:16.230+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092 (0)
+[2025-07-10T04:35:16.231+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-07-10T04:35:16.232+0000] {client_async.py:1049} WARNING - No node available during check_version; sleeping 0.10 secs
+[2025-07-10T04:35:16.328+0000] {conn.py:1516} WARNING - DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-07-10T04:35:16.329+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092 (0)
+[2025-07-10T04:35:16.330+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-07-10T04:35:16.330+0000] {client_async.py:1049} WARNING - No node available during check_version; sleeping 0.23 secs
+[2025-07-10T04:35:16.556+0000] {conn.py:1516} WARNING - DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-07-10T04:35:16.557+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092 (0)
+[2025-07-10T04:35:16.558+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-07-10T04:35:16.558+0000] {client_async.py:1049} WARNING - No node available during check_version; sleeping 0.32 secs
+[2025-07-10T04:35:16.878+0000] {conn.py:1516} WARNING - DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-07-10T04:35:16.879+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092 (0)
+[2025-07-10T04:35:16.880+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-07-10T04:35:16.881+0000] {client_async.py:1049} WARNING - No node available during check_version; sleeping 0.73 secs
+[2025-07-10T04:35:17.610+0000] {conn.py:1516} WARNING - DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+[2025-07-10T04:35:17.611+0000] {conn.py:323} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: DNS lookup failed for ${KAFKA_BOOTSTRAP_SERVERS}:9092 (0)
+[2025-07-10T04:35:17.611+0000] {conn.py:945} ERROR - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=${KAFKA_BOOTSTRAP_SERVERS}:9092 <connecting> [unspecified None]>: Closing connection. KafkaConnectionError: DNS failure
+[2025-07-10T04:35:17.612+0000] {client_async.py:1049} WARNING - No node available during check_version; sleeping 0.56 secs
+[2025-07-10T04:35:18.168+0000] {fraud_detection_training.py:160} ERROR - Failed to read data from Kafka: NoBrokersAvailable
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 125, in read_from_kafka
+    consumer = KafkaConsumer(
+               ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/consumer/group.py", line 387, in __init__
+    self._client = self.config['kafka_client'](metrics=self._metrics, **self.config)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 262, in __init__
+    self.config['api_version'] = self.check_version()
+                                 ^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 1074, in check_version
+    raise Errors.NoBrokersAvailable()
+kafka.errors.NoBrokersAvailable: NoBrokersAvailable
+[2025-07-10T04:35:18.180+0000] {fraud_detection_training.py:675} ERROR - Training failed: NoBrokersAvailable
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training.py", line 400, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 125, in read_from_kafka
+    consumer = KafkaConsumer(
+               ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/consumer/group.py", line 387, in __init__
+    self._client = self.config['kafka_client'](metrics=self._metrics, **self.config)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 262, in __init__
+    self.config['api_version'] = self.check_version()
+                                 ^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 1074, in check_version
+    raise Errors.NoBrokersAvailable()
+kafka.errors.NoBrokersAvailable: NoBrokersAvailable
+[2025-07-10T04:35:18.184+0000] {fraud_detection_training_dag.py:37} ERROR - Training failed: NoBrokersAvailable
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 400, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 125, in read_from_kafka
+    consumer = KafkaConsumer(
+               ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/consumer/group.py", line 387, in __init__
+    self._client = self.config['kafka_client'](metrics=self._metrics, **self.config)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 262, in __init__
+    self.config['api_version'] = self.check_version()
+                                 ^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 1074, in check_version
+    raise Errors.NoBrokersAvailable()
+kafka.errors.NoBrokersAvailable: NoBrokersAvailable
+[2025-07-10T04:35:18.201+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 400, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 125, in read_from_kafka
+    consumer = KafkaConsumer(
+               ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/consumer/group.py", line 387, in __init__
+    self._client = self.config['kafka_client'](metrics=self._metrics, **self.config)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 262, in __init__
+    self.config['api_version'] = self.check_version()
+                                 ^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 1074, in check_version
+    raise Errors.NoBrokersAvailable()
+kafka.errors.NoBrokersAvailable: NoBrokersAvailable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: NoBrokersAvailable
+[2025-07-10T04:35:18.217+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=fraud_detection_training, task_id=execute_training, run_id=scheduled__2025-07-09T03:00:00+00:00, execution_date=20250709T030000, start_date=20250710T043456, end_date=20250710T043518
+[2025-07-10T04:35:18.261+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-07-10T04:35:18.262+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 67 for task execute_training (Model training failed: NoBrokersAvailable; 3716)
+Traceback (most recent call last):
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 32, in train_model
+    model, precision = trainer.train_model()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 400, in train_model
+    df = self.read_from_kafka()
+         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training.py", line 125, in read_from_kafka
+    consumer = KafkaConsumer(
+               ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/consumer/group.py", line 387, in __init__
+    self._client = self.config['kafka_client'](metrics=self._metrics, **self.config)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 262, in __init__
+    self.config['api_version'] = self.check_version()
+                                 ^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/kafka/client_async.py", line 1074, in check_version
+    raise Errors.NoBrokersAvailable()
+kafka.errors.NoBrokersAvailable: NoBrokersAvailable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 763, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 238, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 256, in execute_callable
+    return runner.run(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/fraud_detection_training_dag.py", line 38, in train_model
+    raise AirflowException(f'Model training failed: {str(e)}')
+airflow.exceptions.AirflowException: Model training failed: NoBrokersAvailable
+[2025-07-10T04:35:18.340+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2025-07-10T04:35:18.370+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-07-10T04:35:18.372+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

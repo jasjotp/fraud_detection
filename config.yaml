@@ -1,7 +1,6 @@
 mlflow:
   experiment_name: "fraud_detection_"
   registered_model_name: "fraud_detection_xgboost"
-  tracking_uri: ${TRACKING_URI}
   artifact_location: "s3://mlflow/fraud_detection"
   s3_endpoint_url: ${S3_ENDPOINT_URL}
   bucket: "mlflow"

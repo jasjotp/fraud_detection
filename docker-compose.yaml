@@ -9,7 +9,7 @@ x-airflow-common:
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
@@ -60,6 +60,30 @@ services:
     restart: always
     networks:
       - fraud-detection
+
+  fastapi:
+    build:
+      context: ./api      # <— folder that contains Dockerfile + app/
+      dockerfile: Dockerfile
+    env_file: .env            # JWT_SECRET, DB_URL, KAFKA_BOOTSTRAP …
+    ports:
+      - "8000:8000"           # host:container
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:                
+      - ./config.yaml:/app/config.yaml:ro   # mount file read-only
+      - ./models:/app/models                
+      - ./.env:/app/.env:ro                
+    networks:
+      - fraud-detection
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      retries: 3
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
@@ -338,6 +362,22 @@ services:
       - ./env:/app/.env
     networks:
       - fraud-detection
+
+  kafka-consumer:
+    build:
+      context: ./api 
+      dockerfile: Dockerfile
+    command: python -m app.kafka_consumer
+    env_file: .env
+    depends_on:
+      - postgres
+    volumes:
+      - ./models:/app/models
+      - ./config.yaml:/app/config.yaml
+      - ./.env:/app/.env
+    networks:
+      - fraud-detection
+    restart: always
 
 volumes:
   postgres-db-volume:

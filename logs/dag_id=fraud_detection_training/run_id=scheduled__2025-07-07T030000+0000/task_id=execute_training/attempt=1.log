@@ -1,0 +1,291 @@
+[2025-07-08T04:27:45.061+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-07-08T04:27:45.094+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training scheduled__2025-07-07T03:00:00+00:00 [queued]>
+[2025-07-08T04:27:45.107+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: fraud_detection_training.execute_training scheduled__2025-07-07T03:00:00+00:00 [queued]>
+[2025-07-08T04:27:45.108+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2025-07-08T04:27:45.125+0000] {taskinstance.py:2890} INFO - Executing <Task(PythonOperator): execute_training> on 2025-07-07 03:00:00+00:00
+[2025-07-08T04:27:45.134+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70: DeprecationWarning: This process (pid=65) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-07-08T04:27:45.135+0000] {standard_task_runner.py:72} INFO - Started process 66 to run task
+[2025-07-08T04:27:45.135+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'fraud_detection_training', 'execute_training', 'scheduled__2025-07-07T03:00:00+00:00', '--job-id', '47', '--raw', '--subdir', 'DAGS_FOLDER/fraud_detection_training_dag.py', '--cfg-path', '/tmp/tmp8ndq_2jv']
+[2025-07-08T04:27:45.136+0000] {standard_task_runner.py:105} INFO - Job 47: Subtask execute_training
+[2025-07-08T04:27:45.188+0000] {task_command.py:467} INFO - Running <TaskInstance: fraud_detection_training.execute_training scheduled__2025-07-07T03:00:00+00:00 [running]> on host 7a027e09132a
+[2025-07-08T04:27:45.336+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Jasjot Parmar' AIRFLOW_CTX_DAG_ID='fraud_detection_training' AIRFLOW_CTX_TASK_ID='execute_training' AIRFLOW_CTX_EXECUTION_DATE='2025-07-07T03:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-07-07T03:00:00+00:00'
+[2025-07-08T04:27:45.337+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-07-08T04:27:45.365+0000] {fraud_detection_training_dag.py:23} INFO - Initializing fraud detection training...
+[2025-07-08T04:27:51.066+0000] {fraud_detection_training_dag.py:26} INFO - Imported FraudDetectionTraining successfully.
+[2025-07-08T04:27:51.113+0000] {fraud_detection_training.py:75} INFO - Configuration loaded successfully
+[2025-07-08T04:27:52.430+0000] {fraud_detection_training.py:106} INFO - Minio connection verified. Buckets: ['mlflow']
+[2025-07-08T04:27:53.774+0000] {fraud_detection_training_dag.py:29} INFO - Trainer initialized successfully.
+[2025-07-08T04:27:53.774+0000] {fraud_detection_training.py:397} INFO - Starting model training process...
+[2025-07-08T04:27:53.775+0000] {fraud_detection_training.py:122} INFO - Connecting to Kafka Topic: transactions
+[2025-07-08T04:27:53.832+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-07-08T04:27:53.909+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:54.221+0000] {conn.py:618} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <checking_api_versions_recv> [IPv4 ('35.182.170.137', 9092)]>: Broker version identified as 2.6
+[2025-07-08T04:27:54.469+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:54.471+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-07-08T04:27:54.473+0000] {consumer.py:120} WARNING - group_id is None: disabling auto-commit.
+[2025-07-08T04:27:54.474+0000] {subscription_state.py:181} INFO - Updating subscribed topics to: ('transactions',)
+[2025-07-08T04:27:54.546+0000] {subscription_state.py:254} INFO - Updated partition assignment: [('transactions', 0), ('transactions', 1), ('transactions', 2), ('transactions', 3), ('transactions', 4), ('transactions', 5)]
+[2025-07-08T04:27:54.575+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-07-08T04:27:54.600+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-07-08T04:27:54.628+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-07-08T04:27:54.649+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-07-08T04:27:54.670+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.223.160.19', 9092)]>: connecting to b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.223.160.19', 9092) IPv4]
+[2025-07-08T04:27:54.689+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('35.182.170.137', 9092)]>: connecting to b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('35.182.170.137', 9092) IPv4]
+[2025-07-08T04:27:54.691+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:54.733+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:54.774+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:54.799+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:54.839+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.223.160.19', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:54.871+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('35.182.170.137', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:27:55.203+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:55.204+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-07-08T04:27:55.204+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=bootstrap-0 host=pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-07-08T04:27:55.282+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:55.300+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-07-08T04:27:55.473+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:55.473+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-07-08T04:27:55.641+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:55.642+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-07-08T04:27:55.814+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.223.160.19', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:55.815+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Connection complete.
+[2025-07-08T04:27:55.990+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('35.182.170.137', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:27:55.990+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Connection complete.
+[2025-07-08T04:27:55.991+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 1) to offset 37827.
+[2025-07-08T04:27:55.993+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 5) to offset 37715.
+[2025-07-08T04:27:55.994+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 3) to offset 37536.
+[2025-07-08T04:27:55.994+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 2) to offset 38094.
+[2025-07-08T04:27:55.995+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 0) to offset 37825.
+[2025-07-08T04:27:56.062+0000] {fetcher.py:418} INFO - Resetting offset for partition ('transactions', 4) to offset 37537.
+[2025-07-08T04:32:54.591+0000] {conn.py:396} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connecting> [IPv4 ('15.157.158.196', 9092)]>: connecting to b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 [('15.157.158.196', 9092) IPv4]
+[2025-07-08T04:32:54.690+0000] {conn.py:497} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <handshake> [IPv4 ('15.157.158.196', 9092)]>: Loading system default SSL CAs from ('/usr/lib/ssl/cert.pem', '/usr/lib/ssl/certs', 'SSL_CERT_FILE', '/usr/lib/ssl/cert.pem', 'SSL_CERT_DIR', '/usr/lib/ssl/certs')
+[2025-07-08T04:32:55.115+0000] {conn.py:822} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <authenticating> [IPv4 ('15.157.158.196', 9092)]>: Authenticated as VAWD3ORVNJTGIOBA via SASL / Plain
+[2025-07-08T04:32:55.120+0000] {conn.py:467} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Connection complete.
+[2025-07-08T04:38:42.603+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-07-08T04:38:42.608+0000] {fetcher.py:786} INFO - Fetch to node 1 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=1 host=b1-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-07-08T04:38:42.610+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-07-08T04:38:42.614+0000] {fetcher.py:786} INFO - Fetch to node 2 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=2 host=b2-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-07-08T04:38:42.615+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-07-08T04:38:42.616+0000] {fetcher.py:786} INFO - Fetch to node 3 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=3 host=b3-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-07-08T04:38:42.617+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-07-08T04:38:42.618+0000] {fetcher.py:786} INFO - Fetch to node 5 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=5 host=b5-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>
+[2025-07-08T04:38:42.618+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>: Closing connection. 
+[2025-07-08T04:38:42.619+0000] {fetcher.py:786} INFO - Fetch to node 6 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=6 host=b6-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.223.160.19', 9092)]>
+[2025-07-08T04:38:42.620+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>: Closing connection. 
+[2025-07-08T04:38:42.621+0000] {fetcher.py:786} INFO - Fetch to node 7 failed: Cancelled: <BrokerConnection client_id=kafka-python-2.2.15, node_id=7 host=b7-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('35.182.170.137', 9092)]>
+[2025-07-08T04:38:42.621+0000] {conn.py:945} INFO - <BrokerConnection client_id=kafka-python-2.2.15, node_id=8 host=b8-pkc-ld537.ca-central-1.aws.confluent.cloud:9092 <connected> [IPv4 ('15.157.158.196', 9092)]>: Closing connection. 
+[2025-07-08T04:38:48.972+0000] {fraud_detection_training.py:155} INFO - Kafka data read successfully with fraud rate: 0.39
+[2025-07-08T04:39:41.400+0000] {logging_mixin.py:190} INFO - 0 rows have NaNs
+[2025-07-08T04:39:41.414+0000] {logging_mixin.py:190} INFO - Empty DataFrame
+Columns: [amount, is_night, is_weekend, transaction_day, user_activity_24h, amount_to_avg_ratio, merchant_risk, merchant]
+Index: []
+[2025-07-08T04:39:41.478+0000] {fraud_detection_training.py:417} INFO - Columns with NaNs: []
+[2025-07-08T04:39:45.479+0000] {logging_mixin.py:190} WARNING - [I 2025-07-08 04:39:45,479] A new study created in memory with name: no-name-369df884-beb7-406e-8bfa-6548cf806266
+[2025-07-08T04:39:45.480+0000] {fraud_detection_training.py:519} INFO - Starting Optuna hyperparameter optimization...
+[2025-07-08T04:39:45.483+0000] {logging_mixin.py:190} WARNING -   0%|          | 0/20 [00:00<?, ?it/s]
+[2025-07-08T04:39:45.507+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:39:57.732+0000] {logging_mixin.py:190} WARNING -                                       
+[2025-07-08T04:39:57.733+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:39:57.733+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:39:57,732] Trial 0 finished with value: 0.09335738426314993 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': False, 'use_user_activity_24h': True, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': False, 'use_merchant': True, 'max_depth': 3, 'learning_rate': 0.011572637248381833, 'subsample': 0.7187462389224961, 'colsample_bytree': 0.6221582577465757, 'gamma': 0.09394629526357887, 'reg_alpha': 0.4367533086771682}. Best is trial 0 with value: 0.09335738426314993.
+[2025-07-08T04:39:57.734+0000] {logging_mixin.py:190} WARNING -   0%|          | 0/20 [00:12<?, ?it/s]
+[2025-07-08T04:39:57.736+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.0933574:   0%|          | 0/20 [00:12<?, ?it/s]
+[2025-07-08T04:39:57.737+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.0933574:   5%|5         | 1/20 [00:12<03:52, 12.25s/it]
+[2025-07-08T04:39:57.760+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:40:24.019+0000] {logging_mixin.py:190} WARNING -                                                                                     
+[2025-07-08T04:40:24.020+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:40:24.021+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:40:24,019] Trial 1 finished with value: 0.12485617854322256 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': True, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': True, 'use_merchant': True, 'max_depth': 3, 'learning_rate': 0.05987361574815147, 'subsample': 0.9178706331482577, 'colsample_bytree': 0.8777126370679857, 'gamma': 0.2693191133961806, 'reg_alpha': 0.3188888609134081}. Best is trial 1 with value: 0.12485617854322256.
+[2025-07-08T04:40:24.021+0000] {logging_mixin.py:190} WARNING - Best trial: 0. Best value: 0.0933574:   5%|5         | 1/20 [00:38<03:52, 12.25s/it]
+[2025-07-08T04:40:24.024+0000] {logging_mixin.py:190} WARNING - Best trial: 1. Best value: 0.124856:   5%|5         | 1/20 [00:38<03:52, 12.25s/it] 
+[2025-07-08T04:40:24.024+0000] {logging_mixin.py:190} WARNING - Best trial: 1. Best value: 0.124856:  10%|#         | 2/20 [00:38<06:09, 20.51s/it]
+[2025-07-08T04:40:24.043+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:40:37.811+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-08T04:40:37.811+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:40:37.812+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:40:37,810] Trial 2 finished with value: 0.18176038929720972 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': True, 'use_merchant': True, 'max_depth': 5, 'learning_rate': 0.05338909941396487, 'subsample': 0.6963147852183806, 'colsample_bytree': 0.7010996702603558, 'gamma': 0.123358317365493, 'reg_alpha': 0.38085232550238923}. Best is trial 2 with value: 0.18176038929720972.
+[2025-07-08T04:40:37.812+0000] {logging_mixin.py:190} WARNING - Best trial: 1. Best value: 0.124856:  10%|#         | 2/20 [00:52<06:09, 20.51s/it]
+[2025-07-08T04:40:37.814+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  10%|#         | 2/20 [00:52<06:09, 20.51s/it] 
+[2025-07-08T04:40:37.815+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  15%|#5        | 3/20 [00:52<04:56, 17.44s/it]
+[2025-07-08T04:40:37.833+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:40:47.332+0000] {logging_mixin.py:190} WARNING -                                                                                   
+[2025-07-08T04:40:47.333+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:40:47.333+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:40:47,331] Trial 3 finished with value: 0.12375887123800176 and parameters: {'use_amount': False, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': False, 'use_user_activity_24h': True, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': False, 'use_merchant': False, 'max_depth': 5, 'learning_rate': 0.028872226237744745, 'subsample': 0.8346911119139558, 'colsample_bytree': 0.8248545485910439, 'gamma': 0.16660884432703002, 'reg_alpha': 0.20396469722059912}. Best is trial 2 with value: 0.18176038929720972.
+[2025-07-08T04:40:47.334+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  15%|#5        | 3/20 [01:01<04:56, 17.44s/it]
+[2025-07-08T04:40:47.335+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  15%|#5        | 3/20 [01:01<04:56, 17.44s/it]
+[2025-07-08T04:40:47.336+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  20%|##        | 4/20 [01:01<03:49, 14.31s/it]
+[2025-07-08T04:40:47.356+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:41:06.916+0000] {logging_mixin.py:190} WARNING -                                                                                   
+[2025-07-08T04:41:06.917+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:41:06.917+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:41:06,915] Trial 4 finished with value: 0.11443805752827847 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': True, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': False, 'use_merchant': False, 'max_depth': 5, 'learning_rate': 0.022614778074384327, 'subsample': 0.9556670355471166, 'colsample_bytree': 0.7644293155084311, 'gamma': 0.10221651856983814, 'reg_alpha': 0.15696348849149222}. Best is trial 2 with value: 0.18176038929720972.
+[2025-07-08T04:41:06.918+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  20%|##        | 4/20 [01:21<03:49, 14.31s/it]
+[2025-07-08T04:41:06.921+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  20%|##        | 4/20 [01:21<03:49, 14.31s/it]
+[2025-07-08T04:41:06.922+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  25%|##5       | 5/20 [01:21<04:03, 16.22s/it]
+[2025-07-08T04:41:06.945+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:41:16.766+0000] {logging_mixin.py:190} WARNING -                                                                                   
+[2025-07-08T04:41:16.767+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:41:16.767+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:41:16,765] Trial 5 finished with value: 0.14091819795334057 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': True, 'use_merchant': True, 'max_depth': 3, 'learning_rate': 0.06974500357397467, 'subsample': 0.6063197888708094, 'colsample_bytree': 0.9048464172373, 'gamma': 0.07612606856221718, 'reg_alpha': 0.36191805110546804}. Best is trial 2 with value: 0.18176038929720972.
+[2025-07-08T04:41:16.768+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  25%|##5       | 5/20 [01:31<04:03, 16.22s/it]
+[2025-07-08T04:41:16.770+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  25%|##5       | 5/20 [01:31<04:03, 16.22s/it]
+[2025-07-08T04:41:16.771+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  30%|###       | 6/20 [01:31<03:16, 14.05s/it]
+[2025-07-08T04:41:16.796+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:41:35.813+0000] {logging_mixin.py:190} WARNING -                                                                                   
+[2025-07-08T04:41:35.813+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:41:35.814+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:41:35,812] Trial 6 finished with value: 0.29850102488929037 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.07197570410537057, 'subsample': 0.7938604330276751, 'colsample_bytree': 0.9148309946427131, 'gamma': 0.24271645701241493, 'reg_alpha': 0.08396453250661728}. Best is trial 6 with value: 0.29850102488929037.
+[2025-07-08T04:41:35.814+0000] {logging_mixin.py:190} WARNING - Best trial: 2. Best value: 0.18176:  30%|###       | 6/20 [01:50<03:16, 14.05s/it]
+[2025-07-08T04:41:35.816+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  30%|###       | 6/20 [01:50<03:16, 14.05s/it]
+[2025-07-08T04:41:35.817+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  35%|###5      | 7/20 [01:50<03:23, 15.68s/it]
+[2025-07-08T04:41:35.840+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:41:48.771+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-08T04:41:48.772+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:41:48.773+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:41:48,771] Trial 7 finished with value: 0.11167546498177355 and parameters: {'use_amount': False, 'use_is_night': True, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': True, 'use_amount_to_avg_ratio': True, 'use_merchant_risk': False, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.011518636057375234, 'subsample': 0.9054908814583521, 'colsample_bytree': 0.7144067628839259, 'gamma': 0.14398802264236107, 'reg_alpha': 0.07712073472093883}. Best is trial 6 with value: 0.29850102488929037.
+[2025-07-08T04:41:48.773+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  35%|###5      | 7/20 [02:03<03:23, 15.68s/it]
+[2025-07-08T04:41:48.775+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  35%|###5      | 7/20 [02:03<03:23, 15.68s/it]
+[2025-07-08T04:41:48.775+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  40%|####      | 8/20 [02:03<02:57, 14.82s/it]
+[2025-07-08T04:41:48.792+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:41:58.204+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-08T04:41:58.204+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:41:58.205+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:41:58,203] Trial 8 finished with value: 0.11750475003675949 and parameters: {'use_amount': False, 'use_is_night': False, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': False, 'use_merchant': False, 'max_depth': 4, 'learning_rate': 0.03505436762410836, 'subsample': 0.713154405852986, 'colsample_bytree': 0.6761106800737321, 'gamma': 0.06395648599368138, 'reg_alpha': 0.004780971661126399}. Best is trial 6 with value: 0.29850102488929037.
+[2025-07-08T04:41:58.206+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  40%|####      | 8/20 [02:12<02:57, 14.82s/it]
+[2025-07-08T04:41:58.207+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  40%|####      | 8/20 [02:12<02:57, 14.82s/it]
+[2025-07-08T04:41:58.207+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  45%|####5     | 9/20 [02:12<02:24, 13.13s/it]
+[2025-07-08T04:41:58.224+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:42:17.228+0000] {logging_mixin.py:190} WARNING -                                                                                    
+[2025-07-08T04:42:17.229+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:42:17.229+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:42:17,227] Trial 9 finished with value: 0.10788453761695638 and parameters: {'use_amount': False, 'use_is_night': False, 'use_is_weekend': True, 'use_transaction_day': False, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': False, 'use_merchant': True, 'max_depth': 6, 'learning_rate': 0.012390756373038703, 'subsample': 0.8569662080000888, 'colsample_bytree': 0.9776949863622894, 'gamma': 0.16363081844302593, 'reg_alpha': 0.3011508683034473}. Best is trial 6 with value: 0.29850102488929037.
+[2025-07-08T04:42:17.229+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  45%|####5     | 9/20 [02:31<02:24, 13.13s/it]
+[2025-07-08T04:42:17.231+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  45%|####5     | 9/20 [02:31<02:24, 13.13s/it]
+[2025-07-08T04:42:17.231+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  50%|#####     | 10/20 [02:31<02:29, 14.95s/it]
+[2025-07-08T04:42:17.280+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:42:41.642+0000] {logging_mixin.py:190} WARNING -                                                                                     
+[2025-07-08T04:42:41.643+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:42:41.643+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:42:41,642] Trial 10 finished with value: 0.34518995811371384 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.08591326438207943, 'subsample': 0.7763033811562441, 'colsample_bytree': 0.9971381339799399, 'gamma': 0.2984865649663181, 'reg_alpha': 0.11381869872016327}. Best is trial 10 with value: 0.34518995811371384.
+[2025-07-08T04:42:41.644+0000] {logging_mixin.py:190} WARNING - Best trial: 6. Best value: 0.298501:  50%|#####     | 10/20 [02:56<02:29, 14.95s/it]
+[2025-07-08T04:42:41.646+0000] {logging_mixin.py:190} WARNING - Best trial: 10. Best value: 0.34519:  50%|#####     | 10/20 [02:56<02:29, 14.95s/it]
+[2025-07-08T04:42:41.646+0000] {logging_mixin.py:190} WARNING - Best trial: 10. Best value: 0.34519:  55%|#####5    | 11/20 [02:56<02:40, 17.85s/it]
+[2025-07-08T04:42:41.700+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:42:53.490+0000] {logging_mixin.py:190} WARNING -                                                                                     
+[2025-07-08T04:42:53.491+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:42:53.491+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:42:53,490] Trial 11 finished with value: 0.35670688533166744 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.09630444835683578, 'subsample': 0.7743311771863716, 'colsample_bytree': 0.9821694712210064, 'gamma': 0.28546692892352316, 'reg_alpha': 0.11724279678986912}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:42:53.492+0000] {logging_mixin.py:190} WARNING - Best trial: 10. Best value: 0.34519:  55%|#####5    | 11/20 [03:08<02:40, 17.85s/it]
+[2025-07-08T04:42:53.493+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  55%|#####5    | 11/20 [03:08<02:40, 17.85s/it]
+[2025-07-08T04:42:53.494+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  60%|######    | 12/20 [03:08<02:08, 16.02s/it]
+[2025-07-08T04:42:53.535+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:43:03.688+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:43:03.689+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:43:03.689+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:43:03,688] Trial 12 finished with value: 0.34031903470606983 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 6, 'learning_rate': 0.0993909172429162, 'subsample': 0.7779279297702048, 'colsample_bytree': 0.9839828667957431, 'gamma': 0.2979014595124883, 'reg_alpha': 0.14335923150026328}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:43:03.690+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  60%|######    | 12/20 [03:18<02:08, 16.02s/it]
+[2025-07-08T04:43:03.691+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  60%|######    | 12/20 [03:18<02:08, 16.02s/it]
+[2025-07-08T04:43:03.692+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  65%|######5   | 13/20 [03:18<01:39, 14.26s/it]
+[2025-07-08T04:43:03.734+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:43:22.268+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:43:22.268+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:43:22.269+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:43:22,267] Trial 13 finished with value: 0.35372234026721033 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.09394565153053831, 'subsample': 0.748698514867802, 'colsample_bytree': 0.9875990664502742, 'gamma': 0.22897809463130703, 'reg_alpha': 0.0038399375902243293}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:43:22.269+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  65%|######5   | 13/20 [03:36<01:39, 14.26s/it]
+[2025-07-08T04:43:22.271+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  65%|######5   | 13/20 [03:36<01:39, 14.26s/it]
+[2025-07-08T04:43:22.271+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  70%|#######   | 14/20 [03:36<01:33, 15.56s/it]
+[2025-07-08T04:43:22.314+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:43:33.236+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:43:33.236+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:43:33.237+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:43:33,235] Trial 14 finished with value: 0.24712883459545898 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 6, 'learning_rate': 0.044284274520110425, 'subsample': 0.6434406076177508, 'colsample_bytree': 0.9302311001841536, 'gamma': 0.22141369374949263, 'reg_alpha': 0.013363391300002206}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:43:33.237+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  70%|#######   | 14/20 [03:47<01:33, 15.56s/it]
+[2025-07-08T04:43:33.239+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  70%|#######   | 14/20 [03:47<01:33, 15.56s/it]
+[2025-07-08T04:43:33.239+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  75%|#######5  | 15/20 [03:47<01:10, 14.18s/it]
+[2025-07-08T04:43:33.282+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:43:53.632+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:43:53.633+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:43:53.634+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:43:53,632] Trial 15 finished with value: 0.13656349479471744 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.018774511369856143, 'subsample': 0.7434658617751231, 'colsample_bytree': 0.8343936777277681, 'gamma': 0.0024115483670620885, 'reg_alpha': 0.05226673766975996}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:43:53.634+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  75%|#######5  | 15/20 [04:08<01:10, 14.18s/it]
+[2025-07-08T04:43:53.636+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  75%|#######5  | 15/20 [04:08<01:10, 14.18s/it]
+[2025-07-08T04:43:53.636+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  80%|########  | 16/20 [04:08<01:04, 16.05s/it]
+[2025-07-08T04:43:53.684+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:44:04.700+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:44:04.700+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:44:04.701+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:44:04,699] Trial 16 finished with value: 0.3402323901767399 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 6, 'learning_rate': 0.09781593449482723, 'subsample': 0.6677338829278018, 'colsample_bytree': 0.946754050139168, 'gamma': 0.20414751909791806, 'reg_alpha': 0.21319989362414632}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:44:04.701+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  80%|########  | 16/20 [04:19<01:04, 16.05s/it]
+[2025-07-08T04:44:04.703+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  80%|########  | 16/20 [04:19<01:04, 16.05s/it]
+[2025-07-08T04:44:04.704+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  85%|########5 | 17/20 [04:19<00:43, 14.55s/it]
+[2025-07-08T04:44:04.768+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:44:27.295+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:44:27.296+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:44:27.297+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:44:27,294] Trial 17 finished with value: 0.3007380141555707 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.04520943028715155, 'subsample': 0.8658909820476501, 'colsample_bytree': 0.8833917372769926, 'gamma': 0.2516330158677899, 'reg_alpha': 0.17981906101900125}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:44:27.297+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  85%|########5 | 17/20 [04:41<00:43, 14.55s/it]
+[2025-07-08T04:44:27.300+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  85%|########5 | 17/20 [04:41<00:43, 14.55s/it]
+[2025-07-08T04:44:27.300+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  90%|######### | 18/20 [04:41<00:33, 16.97s/it]
+[2025-07-08T04:44:27.363+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:44:41.027+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:44:41.028+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:44:41.028+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:44:41,026] Trial 18 finished with value: 0.33007862959094897 and parameters: {'use_amount': True, 'use_is_night': True, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 6, 'learning_rate': 0.07559120993060162, 'subsample': 0.8227551718922652, 'colsample_bytree': 0.7664312703795844, 'gamma': 0.19667675993100592, 'reg_alpha': 0.2490772358750624}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:44:41.028+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  90%|######### | 18/20 [04:55<00:33, 16.97s/it]
+[2025-07-08T04:44:41.030+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  90%|######### | 18/20 [04:55<00:33, 16.97s/it]
+[2025-07-08T04:44:41.031+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  95%|#########5| 19/20 [04:55<00:15, 16.00s/it]
+[2025-07-08T04:44:41.093+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/joblib/parallel.py:1379: UserWarning: Loky-backed parallel loops cannot be called in a multiprocessing, setting n_jobs=1
+  n_jobs = self._backend.configure(
+
+[2025-07-08T04:44:59.900+0000] {logging_mixin.py:190} WARNING -                                                                                      
+[2025-07-08T04:44:59.901+0000] {logging_mixin.py:190} WARNING - 
+[2025-07-08T04:44:59.901+0000] {logging_mixin.py:190} INFO - [I 2025-07-08 04:44:59,899] Trial 19 finished with value: 0.18695736031786628 and parameters: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 4, 'learning_rate': 0.05951551197945365, 'subsample': 0.7528929579016069, 'colsample_bytree': 0.9561330162214696, 'gamma': 0.2677509298148476, 'reg_alpha': 0.49467888703072166}. Best is trial 11 with value: 0.35670688533166744.
+[2025-07-08T04:44:59.902+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  95%|#########5| 19/20 [05:14<00:15, 16.00s/it]
+[2025-07-08T04:44:59.903+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707:  95%|#########5| 19/20 [05:14<00:15, 16.00s/it]
+[2025-07-08T04:44:59.904+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707: 100%|##########| 20/20 [05:14<00:00, 16.86s/it]
+[2025-07-08T04:44:59.904+0000] {logging_mixin.py:190} WARNING - Best trial: 11. Best value: 0.356707: 100%|##########| 20/20 [05:14<00:00, 15.72s/it]
+[2025-07-08T04:44:59.905+0000] {fraud_detection_training.py:522} INFO - Best hyperparameters using Optuna: {'use_amount': True, 'use_is_night': False, 'use_is_weekend': False, 'use_transaction_day': True, 'use_user_activity_24h': False, 'use_amount_to_avg_ratio': False, 'use_merchant_risk': True, 'use_merchant': False, 'max_depth': 7, 'learning_rate': 0.09630444835683578, 'subsample': 0.7743311771863716, 'colsample_bytree': 0.9821694712210064, 'gamma': 0.28546692892352316, 'reg_alpha': 0.11724279678986912}
+[2025-07-08T04:45:01.266+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/xgboost/training.py:183: UserWarning: [04:45:01] WARNING: /workspace/src/learner.cc:738: 
+Parameters: { "use_amount", "use_amount_to_avg_ratio", "use_is_night", "use_is_weekend", "use_merchant", "use_merchant_risk", "use_transaction_day", "use_user_activity_24h" } are not used.
+
+  bst.update(dtrain, iteration=i, fobj=obj)
+
+[2025-07-08T04:45:02.991+0000] {credentials.py:1147} INFO - Found credentials in environment variables.
+[2025-07-08T04:45:04.300+0000] {fraud_detection_training.py:587} INFO - Optimal threhsold determined: 0.7856
+[2025-07-08T04:45:10.117+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/mlflow/types/utils.py:452: UserWarning: Hint: Inferred schema contains integer column(s). Integer columns in Python cannot represent missing values. If your input data contains missing values at inference time, it will be encoded as floats and will cause a schema enforcement error. The best way to avoid this problem is to infer the model schema based on a realistic data sample (training dataset) that includes missing values. Alternatively, you can declare integer columns as doubles (float64) whenever these columns may have missing values. See `Handling Integers With Missing Values <https://www.mlflow.org/docs/latest/models.html#handling-integers-with-missing-values>`_ for more details.
+  warnings.warn(
+
+[2025-07-08T04:45:10.127+0000] {logging_mixin.py:190} WARNING - 2025/07/08 04:45:10 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+[2025-07-08T04:45:20.737+0000] {logging_mixin.py:190} WARNING - Registered model 'fraud_detection_model' already exists. Creating a new version of this model...
+[2025-07-08T04:45:20.852+0000] {logging_mixin.py:190} WARNING - 2025/07/08 04:45:20 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: fraud_detection_model, version 8
+[2025-07-08T04:45:20.852+0000] {logging_mixin.py:190} WARNING - Created version '8' of model 'fraud_detection_model'.
+[2025-07-08T04:45:21.133+0000] {fraud_detection_training.py:670} INFO - Training successfully completed with metrics: {'auc_pr': 0.4431530611727353, 'precision': 0.9789473684210527, 'recall': 0.43457943925233644, 'f1': 0.6019417475728155, 'threshold': 0.785560667514801}
+[2025-07-08T04:45:21.164+0000] {logging_mixin.py:190} INFO - 🏃 View run indecisive-bat-591 at: http://mlflow-server:5500/#/experiments/1/runs/baf496ec05b04de3958859e1f82cbf42
+[2025-07-08T04:45:21.164+0000] {logging_mixin.py:190} INFO - 🧪 View experiment at: http://mlflow-server:5500/#/experiments/1
+[2025-07-08T04:45:21.345+0000] {python.py:240} INFO - Done. Returned value was: {'status': 'success', 'precision': {'auc_pr': 0.4431530611727353, 'precision': 0.9789473684210527, 'recall': 0.43457943925233644, 'f1': 0.6019417475728155, 'threshold': 0.785560667514801}}
+[2025-07-08T04:45:21.395+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-07-08T04:45:21.396+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=fraud_detection_training, task_id=execute_training, run_id=scheduled__2025-07-07T03:00:00+00:00, execution_date=20250707T030000, start_date=20250708T042745, end_date=20250708T044521
+[2025-07-08T04:45:21.565+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2025-07-08T04:45:21.839+0000] {taskinstance.py:3901} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-07-08T04:45:21.844+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

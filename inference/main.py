@@ -22,6 +22,17 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# function to load config for Kafka 
+def load_config(config_path):
+    try:
+        with open(config_path, 'rb') as f:
+            raw = f.read()
+            expanded = os.path.expandvars(raw) # allows ${VARIABLE NAME} in config.YAML to get replaced with the actual value from .env
+            return yaml.safe_load(expanded)
+    except Exception as e:
+        logger.error(f'Error loading the config file: {e}')
+        raise 
+
 # class for the inference to use our model to predict on new data in real time coming in from Kafka
 class FraudDetectionInference:
     bootstrap_servers = None 
@@ -35,11 +46,11 @@ class FraudDetectionInference:
     # create the initialization function 
     def __init__(self, config_path = '/app/config.yaml'):
         load_dotenv(dotenv_path = '/app/.env')
-        self.config = self.load_config(config_path)
+        self.config = load_config(config_path)
         self.spark = self.init_spark_session()
         self.model = self.load_model(self.config['model']['path'])
         self.broadcast_model = self.spark.sparkContext.broadcast(self.model)
-        tracking_uri = self.config["mlflow"]["tracking_uri"]  
+        tracking_uri = os.getenv('TRACKING_URI')
         mlflow.set_tracking_uri(tracking_uri)
         self.mlflow_client = MlflowClient(tracking_uri = tracking_uri)
         logger.debug(f'Environment variables loaded: {dict(os.environ)}')
@@ -60,16 +71,6 @@ class FraudDetectionInference:
             logger.error(f'Error loading model: {e}', exc_info = True)
             raise
 
-    # function to load config for Kafka 
-    @staticmethod
-    def load_config(config_path):
-        try:
-            with open(config_path, 'rb') as f:
-                return yaml.safe_load(f)
-        except Exception as e:
-            logger.error(f'Error loading the config file: {e}')
-            raise 
-    
     # function to initialize the Spark Session 
     def init_spark_session(self):
         try:

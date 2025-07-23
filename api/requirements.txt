@@ -1,0 +1,25 @@
+fastapi==0.111.0          # web framework
+uvicorn[standard]==0.29.0 # async server that FastAPI runs on
+gunicorn==21.2.0          # production process manager
+faker
+aiokafka==0.10.0          # background consumer talking to Kafka
+redis==5.0.4              # talk to Redis from FastAPI
+asyncpg==0.29.0           # async PostgreSQL driver (SQLAlchemy 2.x)
+
+SQLAlchemy==2.0.30        # ORM or core queries
+pydantic==2.7.1           # data validation
+python-dotenv
+joblib
+pandas
+dill
+xgboost
+PyYAML
+imbalanced-learn
+pydantic-settings==2.2.1  # load env vars into settings model
+kafka-python>=2.0.2
+python-jose[cryptography]==3.3.0  # JWT encode decode
+passlib[bcrypt]==1.7.4             # password hashing
+python-multipart==0.0.9            # file uploads if needed
+
+orjson==3.10.3           # faster JSON (FastAPI will pick it up)
+httpx==0.27.0            # async HTTP client for tests or out-calls
